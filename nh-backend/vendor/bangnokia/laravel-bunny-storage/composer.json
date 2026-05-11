@@ -1,0 +1,42 @@
+{
+    "name": "bangnokia/laravel-bunny-storage",
+    "description": "Use Bunny Storage in Laravel application",
+    "type": "library",
+    "require": {
+        "platformcommunity/flysystem-bunnycdn": "^3.3",
+        "illuminate/support": "^10.46|^11|^12",
+        "illuminate/filesystem": "^10.46|^11|^12",
+        "league/flysystem-path-prefixing": "^3.3"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0|^12.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Bangnokia\\LaravelBunnyStorage\\BunnyStorageServiceProvider"
+            ]
+        }
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Bangnokia\\LaravelBunnyStorage\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bangnokia\\LaravelBunnyStorage\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "bangnokia",
+            "email": "bangnokia@gmail.com"
+        }
+    ],
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    }
+}

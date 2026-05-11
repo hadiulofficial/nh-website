@@ -1,0 +1,23 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      swiper:
+        specifier: ^12.1.4
+        version: 12.1.4
+
+packages:
+
+  swiper@12.1.4:
+    resolution: {integrity: sha512-bihiwoKMOQwW8FfdUbo1DgkVH25E+4ZELIq0oopL1KTKBteLuaTMi/wwFjMxtlhTkk45k3XQ89D1Fvv0spSqBA==}
+    engines: {node: '>= 4.7.0'}
+
+snapshots:
+
+  swiper@12.1.4: {}

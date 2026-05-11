@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://nhglobaleducation.com/</loc>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Universities page -->
+  <url>
+    <loc>https://nhglobaleducation.com/universities</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Track Application page -->
+  <url>
+    <loc>https://nhglobaleducation.com/application-status</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Success Stories page -->
+  <url>
+    <loc>https://nhglobaleducation.com/success-stories</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- About Us page -->
+  <url>
+    <loc>https://nhglobaleducation.com/about</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Our Team page -->
+  <url>
+    <loc>https://nhglobaleducation.com/team</loc>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
