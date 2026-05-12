@@ -65,31 +65,43 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section id="testimonials" className="py-20 md:py-28 bg-secondary/30">
+    <section id="testimonials" className="py-20 md:py-28 bg-background">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
-        <div className="max-w-3xl mx-auto text-center mb-14 md:mb-16">
+        <div className="max-w-3xl mx-auto text-center mb-16">
           <p className="text-sm font-medium text-primary uppercase tracking-wider mb-3">
             Testimonials
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-5 text-balance leading-tight">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 text-balance">
             Success Stories from Our Students
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             Join thousands of successful students who have achieved their study
             abroad dreams with our comprehensive support and guidance.
           </p>
         </div>
 
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {testimonials.map((testimonial) => (
             <article
               key={testimonial.id}
-              className="group bg-card rounded-2xl p-6 lg:p-7 border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg flex flex-col relative"
+              className="group bg-card rounded-2xl p-6 lg:p-8 border border-border hover:border-primary/20 transition-all duration-300 hover:shadow-lg flex flex-col"
             >
-              {/* Decorative quote */}
-              <Quote className="absolute top-6 right-6 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
+              {/* Header */}
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                  {testimonial.avatar}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-semibold text-foreground truncate">
+                    {testimonial.name}
+                  </h4>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {testimonial.program}
+                  </p>
+                </div>
+              </div>
 
               {/* Rating */}
               <div className="flex items-center gap-1 mb-4">
@@ -101,24 +113,21 @@ const Testimonials = () => {
                 ))}
               </div>
 
-              {/* Quote text */}
-              <p className="text-foreground/80 text-sm leading-relaxed line-clamp-5 mb-6 flex-1">
-                &ldquo;{testimonial.text}&rdquo;
-              </p>
+              {/* Quote */}
+              <div className="relative flex-1 mb-5">
+                <Quote className="absolute -top-1 -left-1 h-6 w-6 text-primary/10" />
+                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-5 pl-4">
+                  {testimonial.text}
+                </p>
+              </div>
 
               {/* Footer */}
-              <div className="pt-5 border-t border-border flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm flex-shrink-0">
-                  {testimonial.avatar}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-semibold text-foreground text-sm truncate">
-                    {testimonial.name}
-                  </h4>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {testimonial.university}
-                  </p>
-                </div>
+              <div className="pt-5 border-t border-border">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{testimonial.university}</span>
+                  <span className="mx-2 text-border">|</span>
+                  <span>{testimonial.country}</span>
+                </p>
               </div>
             </article>
           ))}

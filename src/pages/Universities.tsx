@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Search,
   MapPin,
   Users,
@@ -15,6 +22,7 @@ import {
   Building2,
   Sparkles,
   X,
+  SlidersHorizontal,
 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -169,14 +177,17 @@ const Universities = () => {
     return counts;
   }, []);
 
+  const activeCountry = COUNTRIES.find((c) => c.code === selectedCountry);
+  const hasActiveFilters = searchTerm || selectedCountry !== "all";
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-24 md:pt-28 pb-8 md:pb-12">
+      <section className="pt-24 md:pt-28 pb-8 md:pb-10">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/80 px-6 py-16 md:px-12 md:py-24">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/85 px-6 py-14 md:px-12 md:py-20">
             {/* Radial gradient overlays */}
             <div
               className="absolute inset-0 opacity-30"
@@ -192,7 +203,7 @@ const Universities = () => {
                 <span>150+ Partner Universities Worldwide</span>
               </div>
 
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 text-balance leading-tight">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-5 text-balance leading-tight">
                 Find Your Perfect University
               </h1>
               <p className="text-base md:text-lg text-white/90 max-w-2xl mx-auto text-pretty leading-relaxed">
@@ -205,65 +216,91 @@ const Universities = () => {
         </div>
       </section>
 
-      {/* Stats Strip */}
-      <section className="py-6">
+      {/* Unified Search & Filter Bar */}
+      <section className="pb-6">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: Building2, label: "Universities", value: "150+" },
-              { icon: Globe2, label: "Countries", value: "12+" },
-              { icon: GraduationCap, label: "Programs", value: "500+" },
-              { icon: Award, label: "Top Ranked", value: "QS 5-Star" },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border"
-              >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <stat.icon className="w-5 h-5 text-primary" />
+          <div className="relative max-w-4xl mx-auto -mt-16 md:-mt-20">
+            <div className="bg-card rounded-2xl border border-border shadow-xl p-3 md:p-4">
+              <div className="flex flex-col md:flex-row gap-3">
+                {/* Search Input */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search universities, cities, or programs…"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 pr-10 h-12 md:h-13 text-base rounded-xl border-border bg-background focus-visible:ring-primary"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <div className="text-lg md:text-xl font-bold text-foreground leading-none">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs md:text-sm text-muted-foreground mt-1">
-                    {stat.label}
-                  </div>
+
+                {/* Country Select Dropdown */}
+                <div className="md:w-64">
+                  <Select
+                    value={selectedCountry}
+                    onValueChange={setSelectedCountry}
+                  >
+                    <SelectTrigger
+                      className="h-12 md:h-13 rounded-xl border-border bg-background text-base px-4 focus:ring-primary"
+                      aria-label="Filter by country"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg leading-none">
+                          {activeCountry?.flag}
+                        </span>
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {COUNTRIES.map((country) => {
+                        const count = countryCounts[country.code] || 0;
+                        if (country.code !== "all" && count === 0) return null;
+                        return (
+                          <SelectItem
+                            key={country.code}
+                            value={country.code}
+                            className="py-2.5 rounded-lg cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-base leading-none">
+                                {country.flag}
+                              </span>
+                              <span className="font-medium">{country.name}</span>
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({count})
+                              </span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Search & Filter Section */}
-      <section className="py-8 md:py-10">
+      {/* Quick Filter Pills */}
+      <section className="pb-6">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-6 md:mb-8">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              <Input
-                type="text"
-                placeholder="Search by university name, city, or program..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-12 h-14 text-base rounded-2xl border-border bg-card shadow-sm focus-visible:ring-primary"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+          <div className="flex items-center gap-2 mb-3">
+            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Quick Filter
+            </span>
           </div>
-
-          {/* Country Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             {COUNTRIES.map((country) => {
               const count = countryCounts[country.code] || 0;
               const isActive = selectedCountry === country.code;
@@ -272,16 +309,16 @@ const Universities = () => {
                 <button
                   key={country.code}
                   onClick={() => setSelectedCountry(country.code)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all border ${
                     isActive
-                      ? "bg-primary text-primary-foreground border-primary shadow-md"
-                      : "bg-card text-foreground border-border hover:border-primary/30 hover:bg-primary/5"
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-card text-foreground border-border hover:border-primary/40 hover:bg-primary/5"
                   }`}
                 >
-                  <span className="text-base leading-none">{country.flag}</span>
+                  <span className="text-sm leading-none">{country.flag}</span>
                   <span>{country.name}</span>
                   <span
-                    className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${
                       isActive
                         ? "bg-white/20 text-white"
                         : "bg-muted text-muted-foreground"
@@ -296,22 +333,54 @@ const Universities = () => {
         </div>
       </section>
 
+      {/* Stats Strip */}
+      <section className="pb-8">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {[
+              { icon: Building2, label: "Universities", value: "150+" },
+              { icon: Globe2, label: "Countries", value: "12+" },
+              { icon: GraduationCap, label: "Programs", value: "500+" },
+              { icon: Award, label: "Top Ranked", value: "QS 5-Star" },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <stat.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-lg md:text-xl font-bold text-foreground leading-none">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs md:text-sm text-muted-foreground mt-1 truncate">
+                    {stat.label}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Results Header */}
       <section className="pb-4">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <h2 className="text-xl md:text-2xl font-bold text-foreground">
                 {filteredUniversities.length}{" "}
-                {filteredUniversities.length === 1 ? "University" : "Universities"}{" "}
+                {filteredUniversities.length === 1
+                  ? "University"
+                  : "Universities"}{" "}
                 Found
               </h2>
-              {(searchTerm || selectedCountry !== "all") && (
+              {hasActiveFilters && (
                 <p className="text-sm text-muted-foreground mt-1">
                   {selectedCountry !== "all" && (
                     <>
-                      in{" "}
-                      {COUNTRIES.find((c) => c.code === selectedCountry)?.name}
+                      in <span className="font-medium text-foreground">{activeCountry?.name}</span>
                     </>
                   )}
                   {searchTerm && (
@@ -325,14 +394,15 @@ const Universities = () => {
                 </p>
               )}
             </div>
-            {(searchTerm || selectedCountry !== "all") && (
+            {hasActiveFilters && (
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCountry("all");
                 }}
-                className="text-sm font-medium text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
               >
+                <X className="w-4 h-4" />
                 Clear filters
               </button>
             )}
@@ -344,15 +414,15 @@ const Universities = () => {
       <section className="pb-16 md:pb-24">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           {filteredUniversities.length === 0 ? (
-            <div className="text-center py-16 md:py-24">
+            <div className="text-center py-16 md:py-24 bg-card rounded-3xl border border-border">
               <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
                 <Search className="w-10 h-10 text-muted-foreground" />
               </div>
               <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
                 No Universities Found
               </h3>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                We couldn't find any universities matching your filters. Try
+              <p className="text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
+                We couldn&apos;t find any universities matching your filters. Try
                 adjusting your search or selecting a different country.
               </p>
               <Button
@@ -361,6 +431,7 @@ const Universities = () => {
                   setSelectedCountry("all");
                 }}
                 variant="outline"
+                className="rounded-full"
               >
                 Reset Filters
               </Button>
@@ -386,7 +457,7 @@ const Universities = () => {
                         decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
                       {/* Country flag badge */}
                       <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-sm text-xs font-semibold text-foreground shadow-sm">
@@ -466,7 +537,7 @@ const Universities = () => {
                         <span className="text-sm font-semibold text-primary group-hover:underline">
                           View Details
                         </span>
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
                           <ArrowRight className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
                         </div>
                       </div>
@@ -493,7 +564,7 @@ const Universities = () => {
             <div className="relative grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 text-balance leading-tight">
-                  Can't decide which university is right for you?
+                  Can&apos;t decide which university is right for you?
                 </h2>
                 <p className="text-white/90 text-base md:text-lg leading-relaxed">
                   Our expert counsellors will guide you through the selection
