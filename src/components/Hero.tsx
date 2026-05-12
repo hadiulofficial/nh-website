@@ -60,11 +60,11 @@ const Hero = () => {
             {slides.map((slide, index) => (
               <SwiperSlide key={index}>
                 <div className="relative w-full h-full">
-                  {/* Image with top positioning to avoid cutting heads */}
+                  {/* Image with center positioning for balanced view */}
                   <img
                     src={slide.image}
                     alt={slide.title}
-                    className="absolute inset-0 w-full h-full object-cover object-top"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
                   />
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/40 to-foreground/20" />
