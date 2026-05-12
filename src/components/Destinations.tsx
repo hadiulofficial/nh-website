@@ -40,29 +40,20 @@ const destinations = [
 
 const Destinations = () => {
   return (
-    <section id="destinations" className="py-20 md:py-28 bg-secondary/30">
+    <section id="destinations" className="py-20 md:py-28 bg-background">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 md:mb-14">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium text-primary uppercase tracking-wider mb-3">
-              Study Destinations
-            </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 text-balance leading-tight">
-              Popular Study Destinations
-            </h2>
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-              Explore top destinations where thousands of students have built their futures with world-class education.
-            </p>
-          </div>
-          <div className="hidden md:block">
-            <Link to="/universities">
-              <Button variant="outline" className="group rounded-xl">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
-          </div>
+        <div className="max-w-3xl mb-16">
+          <p className="text-sm font-medium text-primary uppercase tracking-wider mb-3">
+            Study Destinations
+          </p>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 text-balance leading-tight">
+            Popular Study Destinations
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Explore top destinations where thousands of students have built
+            their futures with world-class education opportunities.
+          </p>
         </div>
 
         {/* Destinations Grid */}
@@ -70,60 +61,52 @@ const Destinations = () => {
           {destinations.map((destination) => (
             <article
               key={destination.id}
-              className="group relative bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
+              className="group relative bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/20 transition-all duration-500 hover:shadow-xl"
             >
               {/* Image */}
               <div className="relative h-64 overflow-hidden">
                 <img
                   src={destination.image}
                   alt={destination.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
                 <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/95 text-foreground backdrop-blur-sm shadow-sm">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/90 text-foreground backdrop-blur-sm">
                     <MapPin className="w-3 h-3 mr-1" />
                     {destination.city}
                   </span>
                 </div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                <div className="absolute bottom-4 left-4">
+                  <h3 className="text-2xl font-bold text-white">
                     {destination.name}
                   </h3>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="p-6 lg:p-7">
-                <p className="text-muted-foreground mb-6 leading-relaxed text-sm md:text-base">
+              <div className="p-6">
+                <p className="text-muted-foreground mb-6 leading-relaxed">
                   {destination.description}
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-secondary/50">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center text-sm">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
                       <GraduationCap className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-foreground leading-tight">{destination.universities}</div>
-                      <div className="text-xs text-muted-foreground">Universities</div>
-                    </div>
+                    <span className="text-foreground font-medium">{destination.universities} Universities</span>
                   </div>
-                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-secondary/50">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center text-sm">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
                       <Users className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-foreground leading-tight">{destination.students}</div>
-                      <div className="text-xs text-muted-foreground">Students</div>
-                    </div>
+                    <span className="text-foreground font-medium">{destination.students} Students Placed</span>
                   </div>
                 </div>
 
                 <Link to="/universities">
-                  <Button variant="outline" className="w-full group/btn rounded-xl">
+                  <Button variant="outline" className="w-full group/btn">
                     Explore Programs
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                   </Button>
@@ -133,10 +116,10 @@ const Destinations = () => {
           ))}
         </div>
 
-        {/* Mobile View All */}
-        <div className="mt-10 text-center md:hidden">
+        {/* View All Link */}
+        <div className="mt-12 text-center">
           <Link to="/universities">
-            <Button variant="outline" className="group rounded-xl">
+            <Button variant="link" className="text-primary font-medium group">
               View All Destinations
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
