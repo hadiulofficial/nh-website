@@ -23,10 +23,7 @@ import {
   Loader2,
   ExternalLink,
   Info,
-  GraduationCap,
-  Building,
-  User,
-  Calendar,
+  ChevronDown,
 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -197,50 +194,73 @@ interface SearchResult {
   message?: string;
 }
 
-// Donut Chart Component
+// Large Donut Chart Component matching EMGS design
 const DonutChart = ({ percentage }: { percentage: number }) => {
-  const radius = 45;
+  const radius = 80;
+  const strokeWidth = 16;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
-  const isComplete = percentage >= 100;
+  
+  // Color based on percentage
+  const getColor = () => {
+    if (percentage >= 100) return "#22c55e"; // Green
+    if (percentage >= 50) return "#f59e0b"; // Amber/Orange
+    return "#dc2626"; // Red
+  };
 
   return (
-    <div className="relative w-32 h-32 mx-auto">
-      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+    <div className="relative w-48 h-48 md:w-56 md:h-56">
+      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
         {/* Background circle */}
         <circle
-          cx="50"
-          cy="50"
+          cx="100"
+          cy="100"
           r={radius}
-          stroke="currentColor"
-          strokeWidth="8"
+          stroke="#e5e7eb"
+          strokeWidth={strokeWidth}
           fill="none"
-          className="text-muted/30"
         />
         {/* Progress circle */}
         <circle
-          cx="50"
-          cy="50"
+          cx="100"
+          cy="100"
           r={radius}
-          stroke="currentColor"
-          strokeWidth="8"
+          stroke={getColor()}
+          strokeWidth={strokeWidth}
           fill="none"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className={`transition-all duration-1000 ease-out ${
-            isComplete ? "text-emerald-500" : percentage >= 50 ? "text-amber-500" : "text-primary"
-          }`}
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className={`text-2xl font-bold ${isComplete ? "text-emerald-600" : "text-foreground"}`}>
+        <span 
+          className="text-4xl md:text-5xl font-bold"
+          style={{ color: getColor() }}
+        >
           {percentage}%
         </span>
       </div>
     </div>
   );
 };
+
+// Small ring icon for color info
+const RingIcon = ({ color }: { color: string }) => (
+  <svg className="w-6 h-6" viewBox="0 0 24 24">
+    <circle
+      cx="12"
+      cy="12"
+      r="9"
+      stroke={color}
+      strokeWidth="4"
+      fill="none"
+      strokeDasharray="40 60"
+      transform="rotate(-90 12 12)"
+    />
+  </svg>
+);
 
 const ApplicationStatus = () => {
   const [passportNumber, setPassportNumber] = useState("");
@@ -249,6 +269,7 @@ const ApplicationStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+  const [historyExpanded, setHistoryExpanded] = useState(true);
 
   // Handle search submission
   const handleSearch = async () => {
@@ -293,125 +314,19 @@ const ApplicationStatus = () => {
     }
   };
 
-  // Get status color
-  const getStatusColor = (percentage: number | null | undefined) => {
-    if (!percentage) return "text-muted-foreground";
-    if (percentage >= 100) return "text-emerald-600";
-    if (percentage >= 50) return "text-amber-600";
-    return "text-primary";
-  };
-
-  // Get info strip style
-  const getInfoStripStyle = (percentage: number | null | undefined, applicationType?: string | null) => {
+  // Get percentage meaning text
+  const getPercentageMeaning = (percentage: number | null | undefined, applicationType?: string | null) => {
+    if (!percentage) return "Your application status is being retrieved.";
     const isRenewal = applicationType?.toLowerCase().includes("renewal");
-    if (percentage && percentage >= 100) {
-      return {
-        bg: "bg-emerald-50 border-emerald-200",
-        text: "text-emerald-800",
-        icon: CheckCircle,
-        message: isRenewal
-          ? "Your visa renewal application has been completed successfully."
-          : "Your application has been completed successfully. Please check your email for further instructions.",
-      };
+    if (percentage >= 100) {
+      return isRenewal 
+        ? "Your Student Pass Renewal application has been completed."
+        : "Your Student Pass application has been completed.";
     }
-    if (percentage && percentage >= 50) {
-      return {
-        bg: "bg-amber-50 border-amber-200",
-        text: "text-amber-800",
-        icon: Clock,
-        message: "Your application is being processed. This may take a few weeks.",
-      };
+    if (percentage >= 50) {
+      return "Your application is being processed by the Immigration Department.";
     }
-    return {
-      bg: "bg-blue-50 border-blue-200",
-      text: "text-blue-800",
-      icon: Info,
-      message: "Your application has been received and is under initial review.",
-    };
-  };
-
-  // Filter summary display rows
-  const getSummaryDisplayRows = (result: SearchResult) => {
-    const rows: { label: string; value: string; icon: any }[] = [];
-
-    if (result.summary?.fullName || result.name) {
-      rows.push({
-        label: "Full Name",
-        value: result.summary?.fullName || result.name || "",
-        icon: User,
-      });
-    }
-
-    rows.push({
-      label: "Travel Document Number",
-      value: result.summary?.travelDocument || result.passport,
-      icon: FileText,
-    });
-
-    if (result.summary?.applicationNumber) {
-      rows.push({
-        label: "Application Number",
-        value: result.summary.applicationNumber,
-        icon: FileText,
-      });
-    }
-
-    if (result.summary?.applicationType) {
-      rows.push({
-        label: "Application Type",
-        value: result.summary.applicationType,
-        icon: GraduationCap,
-      });
-    }
-
-    if (result.summary?.applicationStatus || result.status) {
-      rows.push({
-        label: "Application Status",
-        value: result.summary?.applicationStatus || result.status || "",
-        icon: CheckCircle,
-      });
-    }
-
-    if (result.summary?.institution || result.institution) {
-      rows.push({
-        label: "Institution",
-        value: result.summary?.institution || result.institution || "",
-        icon: Building,
-      });
-    }
-
-    rows.push({
-      label: "Nationality",
-      value: `${result.nationalityLabel} (${result.nationality})`,
-      icon: Globe,
-    });
-
-    return rows;
-  };
-
-  // Get additional details (rawRows not in summary)
-  const getAdditionalDetails = (result: SearchResult) => {
-    if (!result.rawRows) return [];
-
-    const summaryLabels = [
-      "full name",
-      "name",
-      "travel document",
-      "application number",
-      "application type",
-      "application status",
-      "status",
-      "institution",
-      "university",
-      "nationality",
-      "percentage",
-      "progress",
-    ];
-
-    return result.rawRows.filter((row) => {
-      const lowerLabel = row.label.toLowerCase();
-      return !summaryLabels.some((sl) => lowerLabel.includes(sl));
-    });
+    return "Your application is in progress with EMGS.";
   };
 
   return (
@@ -497,7 +412,7 @@ const ApplicationStatus = () => {
                     </Label>
                     <Input
                       id="passport"
-                      placeholder="e.g., A00686202"
+                      placeholder="e.g., B12345678"
                       value={passportNumber}
                       onChange={(e) => setPassportNumber(e.target.value.toUpperCase())}
                       className="h-12 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -556,140 +471,167 @@ const ApplicationStatus = () => {
               </CardContent>
             </Card>
 
-            {/* Search Result - Success */}
+            {/* Search Result - Success - EMGS Style */}
             {searchResult?.found && (
-              <Card className="mt-8 border border-border rounded-2xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Summary Header */}
-                <div className="px-6 py-4 border-b border-border bg-card">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold text-foreground">Summary</h3>
-                    <div className="flex-1 h-0.5 bg-primary/60 rounded-full" />
-                  </div>
-                </div>
+              <div className="mt-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Summary Card - EMGS Style */}
+                <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
+                  <CardContent className="p-6 md:p-8">
+                    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+                      {/* Donut Chart - Left Side */}
+                      <div className="flex justify-center lg:justify-start">
+                        <DonutChart percentage={searchResult.summary?.percentageNum || 0} />
+                      </div>
 
-                <CardContent className="p-6 md:p-8">
-                  <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Donut Chart */}
-                    <div className="flex flex-col items-center justify-center">
-                      <DonutChart percentage={searchResult.summary?.percentageNum || 0} />
-                      <p className={`mt-4 text-sm font-medium ${getStatusColor(searchResult.summary?.percentageNum)}`}>
-                        {searchResult.summary?.percentageNum === 100
-                          ? "Application Complete"
-                          : "Application In Progress"}
+                      {/* Summary Details - Right Side */}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-foreground mb-1 border-b-2 border-primary pb-2">
+                          Summary
+                        </h3>
+                        
+                        <div className="mt-4 space-y-3">
+                          {searchResult.summary?.fullName || searchResult.name ? (
+                            <div className="flex flex-wrap">
+                              <span className="font-semibold text-foreground w-52">Full Name:</span>
+                              <span className="text-muted-foreground">{searchResult.summary?.fullName || searchResult.name}</span>
+                            </div>
+                          ) : null}
+                          
+                          <div className="flex flex-wrap">
+                            <span className="font-semibold text-foreground w-52">Travel Document Number:</span>
+                            <span className="text-muted-foreground">{searchResult.summary?.travelDocument || searchResult.passport}</span>
+                          </div>
+                          
+                          {searchResult.summary?.applicationNumber && (
+                            <div className="flex flex-wrap">
+                              <span className="font-semibold text-foreground w-52">Application Number:</span>
+                              <span className="text-muted-foreground">{searchResult.summary.applicationNumber}</span>
+                            </div>
+                          )}
+                          
+                          {searchResult.summary?.applicationType && (
+                            <div className="flex flex-wrap">
+                              <span className="font-semibold text-foreground w-52">Application Type:</span>
+                              <span className="text-muted-foreground">{searchResult.summary.applicationType}</span>
+                            </div>
+                          )}
+                          
+                          {(searchResult.summary?.applicationStatus || searchResult.status) && (
+                            <div className="flex flex-wrap">
+                              <span className="font-semibold text-foreground w-52">Application Status:</span>
+                              <span className="text-muted-foreground">{searchResult.summary?.applicationStatus || searchResult.status}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Important Notice - Yellow Bar */}
+                    <div className="mt-8 bg-amber-400 text-amber-900 px-4 py-3 rounded-lg">
+                      <p className="text-sm font-medium">
+                        <strong>IMPORTANT:</strong> Kindly read the explanation below to understand the percentage.
                       </p>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    {/* Summary Details */}
-                    <div className="lg:col-span-2 space-y-4">
-                      {getSummaryDisplayRows(searchResult).map((row, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <row.icon className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-muted-foreground">{row.label}</p>
-                            <p className="font-medium text-foreground truncate">{row.value}</p>
+                {/* Percentage Meaning & Color Info Card */}
+                <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
+                  <CardContent className="p-6 md:p-8">
+                    <div className="grid md:grid-cols-2 gap-8">
+                      {/* What does the percentage mean? */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-foreground mb-4">What does the percentage mean?</h4>
+                        <div className="flex items-center gap-3">
+                          <Badge 
+                            className="text-lg px-4 py-2 font-bold"
+                            style={{ 
+                              backgroundColor: searchResult.summary?.percentageNum && searchResult.summary.percentageNum >= 100 
+                                ? "#22c55e" 
+                                : searchResult.summary?.percentageNum && searchResult.summary.percentageNum >= 50 
+                                  ? "#f59e0b" 
+                                  : "#dc2626",
+                              color: "white"
+                            }}
+                          >
+                            {searchResult.summary?.percentageNum || 0}%
+                          </Badge>
+                          <span className="text-muted-foreground">
+                            {getPercentageMeaning(searchResult.summary?.percentageNum, searchResult.summary?.applicationType)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Color Info */}
+                      <div>
+                        <div className="inline-block bg-red-600 text-white px-4 py-1 rounded-t-lg font-semibold text-sm">
+                          Color Info:
+                        </div>
+                        <div className="border-2 border-red-600 rounded-b-lg rounded-tr-lg overflow-hidden">
+                          <div className="p-4 space-y-3">
+                            <div className="flex items-start gap-3">
+                              <RingIcon color="#22c55e" />
+                              <span className="text-sm text-muted-foreground">Your application is progressing accordingly.</span>
+                            </div>
+                            <div className="flex items-start gap-3 pt-2 border-t border-border">
+                              <RingIcon color="#f59e0b" />
+                              <span className="text-sm text-muted-foreground">Your application is pending additional documents or correction by your institution.</span>
+                            </div>
+                            <div className="flex items-start gap-3 pt-2 border-t border-border">
+                              <RingIcon color="#dc2626" />
+                              <span className="text-sm text-muted-foreground">Your application has been rejected/expired at the current stage. Please contact your institution for advice.</span>
+                            </div>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Info Strip */}
-                  {(() => {
-                    const infoStrip = getInfoStripStyle(
-                      searchResult.summary?.percentageNum,
-                      searchResult.summary?.applicationType
-                    );
-                    const InfoIcon = infoStrip.icon;
-                    return (
-                      <div className={`mt-8 flex items-start gap-3 p-4 rounded-xl border ${infoStrip.bg}`}>
-                        <InfoIcon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${infoStrip.text}`} />
-                        <p className={`text-sm ${infoStrip.text}`}>{infoStrip.message}</p>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Status Legend */}
-                  <div className="mt-6 grid grid-cols-3 gap-4">
-                    {[
-                      { color: "bg-emerald-500", label: "Complete", desc: "100%" },
-                      { color: "bg-amber-500", label: "Processing", desc: "50-99%" },
-                      { color: "bg-primary", label: "Initial", desc: "0-49%" },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                        <span className="text-muted-foreground">
-                          {item.label} ({item.desc})
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-
-                {/* History Table */}
+                {/* Application Progress History - Collapsible */}
                 {searchResult.history && searchResult.history.length > 0 && (
-                  <>
-                    <div className="px-6 py-4 border-t border-border bg-card">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Application History</h3>
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-primary text-primary-foreground">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-sm font-semibold">Date</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold">Remark</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {[...searchResult.history].reverse().map((entry, index) => (
-                            <tr key={index} className="hover:bg-muted/50 transition-colors">
-                              <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">
-                                {entry.date}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-foreground">{entry.status}</td>
-                              <td className="px-6 py-4 text-sm text-muted-foreground">
-                                {entry.remark || "-"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                )}
+                  <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
+                    {/* Red Header */}
+                    <button
+                      onClick={() => setHistoryExpanded(!historyExpanded)}
+                      className="w-full bg-red-700 text-white px-6 py-4 flex items-center justify-between hover:bg-red-800 transition-colors"
+                    >
+                      <span className="font-semibold flex items-center gap-2">
+                        <ChevronDown className={`w-5 h-5 transition-transform ${historyExpanded ? "" : "-rotate-90"}`} />
+                        Application Progress History
+                      </span>
+                    </button>
 
-                {/* Additional Details */}
-                {getAdditionalDetails(searchResult).length > 0 && (
-                  <>
-                    <div className="px-6 py-4 border-t border-border bg-card">
-                      <div className="flex items-center gap-2">
-                        <Info className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Additional Details</h3>
+                    {historyExpanded && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          {/* Green Table Header */}
+                          <thead className="bg-green-600 text-white">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-sm font-semibold w-36">Date</th>
+                              <th className="px-6 py-3 text-left text-sm font-semibold w-48">Status</th>
+                              <th className="px-6 py-3 text-left text-sm font-semibold">Remark</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border bg-card">
+                            {[...searchResult.history].reverse().map((entry, index) => (
+                              <tr key={index} className="hover:bg-muted/50 transition-colors">
+                                <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">
+                                  {entry.date}
+                                </td>
+                                <td className="px-6 py-4 text-sm text-foreground">{entry.status}</td>
+                                <td className="px-6 py-4 text-sm text-muted-foreground">
+                                  {entry.remark || "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    </div>
-                    <CardContent className="p-6 pt-0">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {getAdditionalDetails(searchResult).map((row, index) => (
-                          <div key={index} className="flex justify-between items-start py-2 border-b border-border/50">
-                            <span className="text-sm text-muted-foreground">{row.label}</span>
-                            <span className="text-sm font-medium text-foreground text-right max-w-[60%]">
-                              {row.value}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </>
+                    )}
+                  </Card>
                 )}
-              </Card>
+              </div>
             )}
 
             {/* Not Found State */}
