@@ -1,9 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,111 +12,98 @@ import {
 } from "@/components/ui/select";
 import {
   Search,
-  ShieldCheck,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  FileText,
-  ArrowRight,
   Loader2,
-  Info,
-  ExternalLink,
+  AlertCircle,
+  CheckCircle2,
+  Shield,
+  Clock,
+  FileText,
   ChevronDown,
+  ExternalLink,
 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
+type StatusTone = "green" | "amber" | "red" | "neutral";
+
+interface SummaryItem {
+  label: string;
+  value: string;
+}
+
+interface HistoryItem {
+  date: string;
+  status: string;
+  remark: string;
+}
+
+interface TrackResult {
+  found: boolean;
+  name?: string;
+  percentage?: number | null;
+  status?: string | null;
+  type?: string | null;
+  travelDoc?: string | null;
+  applicationNumber?: string | null;
+  summary?: SummaryItem[];
+  history?: HistoryItem[];
+  message?: string;
+}
+
 const NATIONALITIES = [
   "Bangladesh",
-  "Afghanistan",
-  "Albania",
-  "Algeria",
-  "India",
   "Pakistan",
+  "India",
   "Nepal",
   "Sri Lanka",
+  "Bhutan",
+  "Maldives",
+  "Afghanistan",
   "Indonesia",
-  "Malaysia",
   "Vietnam",
-  "China",
   "Philippines",
+  "China",
   "Nigeria",
+  "Yemen",
+  "Iran",
+  "Iraq",
+  "Egypt",
+  "Sudan",
+  "Somalia",
+  "Kenya",
   "Other",
 ];
 
-type StatusType = "pending" | "approved" | "rejected" | "in_review";
-
-const statusConfig: Record<
-  StatusType,
-  {
-    color: string;
-    ring: string;
-    icon: typeof Clock;
-    label: string;
-    description: string;
+function getStatusTone(status: string | null | undefined, pct: number | null | undefined): StatusTone {
+  const s = (status || "").toLowerCase();
+  if (s.includes("reject") || s.includes("expire") || s.includes("cancel")) return "red";
+  if (s.includes("pending") || s.includes("additional") || s.includes("correct")) return "amber";
+  if (s.includes("complete") || s.includes("approved") || s.includes("issued") || s.includes("returned")) return "green";
+  if (typeof pct === "number") {
+    if (pct >= 100) return "green";
+    if (pct >= 50) return "green";
+    if (pct > 0) return "amber";
   }
-> = {
-  pending: {
-    color: "text-amber-600",
-    ring: "ring-amber-500",
-    icon: Clock,
-    label: "Pending Review",
-    description: "Your application is awaiting review by the institution.",
-  },
-  in_review: {
-    color: "text-blue-600",
-    ring: "ring-blue-500",
-    icon: AlertCircle,
-    label: "In Review",
-    description: "Your application is currently being reviewed.",
-  },
-  approved: {
-    color: "text-emerald-600",
-    ring: "ring-emerald-500",
-    icon: CheckCircle2,
-    label: "Application Completed",
-    description: "Your application has been successfully completed.",
-  },
-  rejected: {
-    color: "text-red-600",
-    ring: "ring-red-500",
-    icon: XCircle,
-    label: "Rejected",
-    description: "Your application has been rejected at the current stage.",
-  },
+  return "neutral";
+}
+
+const TONE_COLORS: Record<StatusTone, { ring: string; fill: string; text: string; bg: string; border: string }> = {
+  green: { ring: "#16a34a", fill: "#dcfce7", text: "text-green-700", bg: "bg-green-50", border: "border-green-200" },
+  amber: { ring: "#f59e0b", fill: "#fef3c7", text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" },
+  red: { ring: "#dc2626", fill: "#fee2e2", text: "text-red-700", bg: "bg-red-50", border: "border-red-200" },
+  neutral: { ring: "#9ca3af", fill: "#f3f4f6", text: "text-muted-foreground", bg: "bg-muted", border: "border-border" },
 };
 
-const features = [
-  {
-    icon: ShieldCheck,
-    title: "Secure & Private",
-    description: "Your details are never stored on our servers.",
-  },
-  {
-    icon: Clock,
-    title: "Real-Time Status",
-    description: "Get the latest update on your application progress.",
-  },
-  {
-    icon: FileText,
-    title: "Full History",
-    description: "See every stage your application has been through.",
-  },
-];
-
 const ApplicationStatus = () => {
-  const [passportNumber, setPassportNumber] = useState("");
-  const [nationality, setNationality] = useState("Bangladesh");
-  const [searchResult, setSearchResult] = useState<any>(null);
+  const [passport, setPassport] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [result, setResult] = useState<TrackResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!passportNumber.trim()) {
-      setError("Please enter your passport number.");
+  const handleSearch = async () => {
+    if (!passport.trim()) {
+      setError("Please enter your travel document number.");
       return;
     }
     if (!nationality) {
@@ -127,446 +113,329 @@ const ApplicationStatus = () => {
 
     setIsLoading(true);
     setError("");
-    setSearchResult(null);
-    setHasSearched(true);
-
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    setResult(null);
 
     try {
-      const response = await axios.post(`${baseUrl}/api/application-status`, {
-        passport_number: passportNumber.trim(),
+      const response = await axios.post("/api/track", {
+        passport: passport.trim(),
         nationality,
       });
-
-      if (response.data.status === "success") {
-        setSearchResult(response.data.data);
-      } else {
-        setError(response.data.message || "Application not found.");
+      setResult(response.data);
+      if (!response.data?.found) {
+        setError(response.data?.message || "No application found. Please verify your details.");
       }
     } catch (err: any) {
       setError(
-        err.response?.data?.message ||
-          "Something went wrong. Please try again later."
+        err?.response?.data?.message ||
+          err?.message ||
+          "Unable to reach the tracking service. Please try again."
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const currentStatus: StatusType = searchResult?.status || "pending";
-  const config = statusConfig[currentStatus] || statusConfig.pending;
-  const StatusIcon = config.icon;
-  const percentage =
-    currentStatus === "approved"
-      ? 100
-      : currentStatus === "in_review"
-        ? 60
-        : currentStatus === "pending"
-          ? 25
-          : 0;
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
+  const tone: StatusTone = result?.found
+    ? getStatusTone(result.status, result.percentage ?? null)
+    : "neutral";
+  const colors = TONE_COLORS[tone];
+  const pct = typeof result?.percentage === "number" ? result.percentage : null;
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>Track Application | NH Global Education</title>
-        <meta
-          name="description"
-          content="Track your university application status in real time with NH Global Education's application status tracker."
-        />
-      </Helmet>
       <Navbar />
 
-      <main className="pt-20 md:pt-24 pb-16 md:pb-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          {/* Page Header */}
-          <div className="max-w-2xl mx-auto text-center mb-8 md:mb-10">
-            <span className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full mb-4">
-              <Search className="w-4 h-4" />
-              Application Tracker
-            </span>
-            <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-3 text-balance">
-              Check Your Application Status
+      <main className="pt-28 pb-20">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-5xl">
+          {/* Title */}
+          <div className="text-center mb-8 md:mb-10">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+              Track Your Application
             </h1>
-            <p className="text-muted-foreground">
-              Enter your passport number and nationality to see the latest
-              status of your application.
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Check your EMGS Student Pass application status by entering your travel document number and nationality.
             </p>
           </div>
 
           {/* Search Form */}
-          <div className="max-w-3xl mx-auto">
-            <form
-              onSubmit={handleSearch}
-              className="bg-card border border-border rounded-2xl shadow-lg p-5 md:p-6"
-            >
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                {/* Passport */}
-                <div>
-                  <label
-                    htmlFor="passport"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    Travel Document Number{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    id="passport"
-                    placeholder="Enter your passport number"
-                    value={passportNumber}
-                    onChange={(e) => setPassportNumber(e.target.value)}
-                    className="h-11 rounded-xl"
-                  />
-                </div>
-
-                {/* Nationality */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Nationality <span className="text-red-500">*</span>
-                  </label>
-                  <Select value={nationality} onValueChange={setNationality}>
-                    <SelectTrigger className="h-11 rounded-xl">
-                      <SelectValue placeholder="Select nationality" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {NATIONALITIES.map((nat) => (
-                        <SelectItem key={nat} value={nat}>
-                          {nat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <div className="bg-card border border-border rounded-2xl shadow-sm p-6 md:p-8 mb-8">
+            <div className="grid md:grid-cols-2 gap-5 mb-5">
+              <div className="space-y-2">
+                <Label htmlFor="passport" className="text-sm font-semibold">
+                  Travel Document Number <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="passport"
+                  placeholder="Enter your passport number"
+                  value={passport}
+                  onChange={(e) => setPassport(e.target.value.toUpperCase())}
+                  onKeyDown={handleKeyDown}
+                  className="h-12 rounded-xl"
+                />
               </div>
 
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-11 rounded-xl shadow-md shadow-primary/20"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4 mr-2" />
-                    Track Application
-                  </>
-                )}
-              </Button>
+              <div className="space-y-2">
+                <Label htmlFor="nationality" className="text-sm font-semibold">
+                  Nationality <span className="text-red-500">*</span>
+                </Label>
+                <Select value={nationality} onValueChange={setNationality}>
+                  <SelectTrigger id="nationality" className="h-12 rounded-xl">
+                    <SelectValue placeholder="Select your nationality" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NATIONALITIES.map((n) => (
+                      <SelectItem key={n} value={n}>
+                        {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-              {error && (
-                <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{error}</span>
-                </div>
+            <Button
+              onClick={handleSearch}
+              disabled={isLoading}
+              className="w-full md:w-auto h-12 px-8 rounded-xl"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Checking status...
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4 mr-2" />
+                  Check Application Status
+                </>
               )}
-            </form>
+            </Button>
 
-            {/* Trust strip */}
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {features.map((f, i) => (
+            {error && (
+              <div className="mt-5 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Trust strip */}
+          {!result && (
+            <div className="grid sm:grid-cols-3 gap-4 mb-12">
+              {[
+                { icon: Shield, title: "Secure & Private", desc: "Your data is never stored." },
+                { icon: Clock, title: "Real-time Data", desc: "Live status from EMGS portal." },
+                { icon: FileText, title: "Official Source", desc: "Direct from immigration records." },
+              ].map((item) => (
                 <div
-                  key={i}
-                  className="flex items-start gap-3 p-4 rounded-2xl bg-card border border-border"
+                  key={item.title}
+                  className="flex items-start gap-3 p-5 bg-card border border-border rounded-2xl"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <f.icon className="w-4 h-4 text-primary" />
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-foreground">
-                      {f.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground leading-relaxed">
-                      {f.description}
-                    </div>
+                    <div className="font-semibold text-sm text-foreground">{item.title}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          )}
 
           {/* Result Section */}
-          {searchResult && (
-            <div className="max-w-5xl mx-auto mt-10 md:mt-12 space-y-5">
-              {/* Summary Card */}
-              <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                <div className="bg-amber-400 text-foreground px-5 py-2.5 text-xs font-semibold uppercase tracking-wide">
-                  Application Summary
-                </div>
-                <div className="p-6 md:p-8 grid md:grid-cols-[auto_1fr] gap-8 items-center">
-                  {/* Donut */}
+          {result?.found && (
+            <div className="space-y-6">
+              {/* Donut + Summary */}
+              <div className="bg-card border-2 border-amber-300 rounded-2xl p-6 md:p-8">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  {/* Donut Chart */}
                   <div className="flex justify-center">
-                    <div className="relative w-44 h-44 md:w-52 md:h-52">
-                      <svg
-                        className="w-full h-full -rotate-90"
-                        viewBox="0 0 100 100"
-                      >
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="42"
-                          fill="none"
-                          stroke="hsl(var(--muted))"
-                          strokeWidth="12"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="42"
-                          fill="none"
-                          strokeWidth="12"
-                          strokeLinecap="round"
-                          className={config.color}
-                          stroke="currentColor"
-                          strokeDasharray={`${(percentage / 100) * 264} 264`}
-                        />
+                    <div className="relative w-48 h-48 md:w-56 md:h-56">
+                      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" strokeWidth="14" />
+                        {pct !== null && (
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            fill="none"
+                            stroke={colors.ring}
+                            strokeWidth="14"
+                            strokeDasharray={`${(pct / 100) * 251.2} 251.2`}
+                            strokeLinecap="butt"
+                          />
+                        )}
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-4xl md:text-5xl font-bold text-foreground">
-                          {percentage}%
+                          {pct !== null ? `${pct}%` : "—"}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Summary Details */}
+                  {/* Summary */}
                   <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 pb-3 border-b-2 border-primary/30">
+                    <h2 className="text-xl font-bold text-foreground mb-4 pb-2 border-b-2 border-red-600 inline-block">
                       Summary
-                    </h3>
-                    <dl className="space-y-2.5 text-sm md:text-base">
-                      <div className="flex flex-wrap gap-x-3">
-                        <dt className="font-semibold text-foreground">
-                          Full Name:
-                        </dt>
-                        <dd className="text-muted-foreground">
-                          {searchResult.name || "N/A"}
-                        </dd>
-                      </div>
-                      <div className="flex flex-wrap gap-x-3">
-                        <dt className="font-semibold text-foreground">
-                          Travel Document Number:
-                        </dt>
-                        <dd className="text-muted-foreground">
-                          {passportNumber}
-                        </dd>
-                      </div>
-                      <div className="flex flex-wrap gap-x-3">
-                        <dt className="font-semibold text-foreground">
-                          Application Number:
-                        </dt>
-                        <dd className="text-muted-foreground">
-                          {searchResult.application_id || "N/A"}
-                        </dd>
-                      </div>
-                      <div className="flex flex-wrap gap-x-3">
-                        <dt className="font-semibold text-foreground">
-                          Application Status:
-                        </dt>
-                        <dd className={`font-medium ${config.color}`}>
-                          {config.label}
-                        </dd>
-                      </div>
+                    </h2>
+                    <dl className="space-y-2.5 text-sm">
+                      {result.name && (
+                        <div className="flex gap-2">
+                          <dt className="font-bold text-foreground min-w-[160px]">Full Name:</dt>
+                          <dd className="text-foreground">{result.name}</dd>
+                        </div>
+                      )}
+                      {result.travelDoc && (
+                        <div className="flex gap-2">
+                          <dt className="font-bold text-foreground min-w-[160px]">Travel Document Number:</dt>
+                          <dd className="text-foreground">{result.travelDoc}</dd>
+                        </div>
+                      )}
+                      {result.applicationNumber && (
+                        <div className="flex gap-2">
+                          <dt className="font-bold text-foreground min-w-[160px]">Application Number:</dt>
+                          <dd className="text-foreground">{result.applicationNumber}</dd>
+                        </div>
+                      )}
+                      {result.type && (
+                        <div className="flex gap-2">
+                          <dt className="font-bold text-foreground min-w-[160px]">Application Type:</dt>
+                          <dd className="text-foreground">{result.type}</dd>
+                        </div>
+                      )}
+                      {result.status && (
+                        <div className="flex gap-2">
+                          <dt className="font-bold text-foreground min-w-[160px]">Application Status:</dt>
+                          <dd className="text-foreground">{result.status}</dd>
+                        </div>
+                      )}
                     </dl>
 
-                    <div className="mt-5 bg-foreground/90 text-background rounded-lg px-4 py-2.5 text-sm">
-                      <span className="font-semibold">IMPORTANT:</span>{" "}
-                      Kindly read the explanation below to understand the
-                      percentage.
+                    <div className="mt-5 bg-slate-700 text-white text-xs md:text-sm px-4 py-2.5 rounded-md">
+                      <strong>IMPORTANT:</strong> Kindly read the explanation below to understand the percentage.
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Percentage Meaning + Color Info */}
-              <div className="bg-card border border-amber-400 rounded-2xl p-6 md:p-8 grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-base md:text-lg font-bold text-foreground mb-4">
-                    What does the percentage mean?
-                  </h3>
-                  <div className="flex items-stretch gap-3">
-                    <div
-                      className={`flex items-center justify-center px-4 rounded-md text-white font-bold text-lg min-w-[64px] ${
-                        currentStatus === "approved"
-                          ? "bg-emerald-600"
-                          : currentStatus === "in_review"
-                            ? "bg-blue-600"
-                            : currentStatus === "pending"
-                              ? "bg-amber-500"
-                              : "bg-red-600"
-                      }`}
-                    >
-                      {percentage}%
-                    </div>
-                    <div className="flex-1 bg-muted/60 rounded-md px-4 py-3 text-sm text-muted-foreground">
-                      {config.description}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-2 border-red-500/40 rounded-xl">
-                  <div className="bg-amber-400 text-foreground font-bold text-sm px-4 py-2 rounded-t-lg inline-block ml-4 -mt-3">
-                    Color Info:
-                  </div>
-                  <div className="p-4 space-y-3">
-                    {[
-                      {
-                        color: "border-emerald-500",
-                        text: "Your application is progressing accordingly.",
-                      },
-                      {
-                        color: "border-amber-400",
-                        text: "Your application is pending additional documents or correction by your institution.",
-                      },
-                      {
-                        color: "border-red-500",
-                        text: "Your application has been rejected/expired at the current stage. Please contact your institution for advice.",
-                      },
-                    ].map((row, i) => (
-                      <div key={i} className="flex items-start gap-3">
+              {/* Percentage explanation + Color Info */}
+              <div className="bg-card border-2 border-amber-300 rounded-2xl p-6 md:p-8">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4">What does the percentage mean?</h3>
+                    {pct !== null && result.status && (
+                      <div className="flex items-start gap-3">
                         <div
-                          className={`w-6 h-6 rounded-full border-4 ${row.color} flex-shrink-0 mt-0.5`}
-                        />
-                        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                          {row.text}
-                        </p>
+                          className="px-3 py-2 rounded font-bold text-white text-sm min-w-[60px] text-center"
+                          style={{ backgroundColor: colors.ring }}
+                        >
+                          {pct}%
+                        </div>
+                        <div className={`flex-1 px-4 py-2 rounded ${colors.bg} text-sm text-foreground`}>
+                          {result.status}.
+                        </div>
                       </div>
-                    ))}
+                    )}
+                  </div>
+
+                  <div className="border-2 border-red-600 rounded-lg overflow-hidden">
+                    <div className="bg-amber-500 text-white font-bold px-4 py-2 text-sm inline-block rounded-br-lg">
+                      Color Info:
+                    </div>
+                    <div className="p-4 space-y-3 text-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full border-[3px] border-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-foreground">Your application is progressing accordingly.</span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full border-[3px] border-amber-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-foreground">
+                          Your application is pending additional documents or correction by your institution.
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full border-[3px] border-red-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-foreground">
+                          Your application has been rejected/expired at the current stage. Please contact your institution for advice.
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Application Progress History */}
-              <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                <div className="bg-red-600 text-white px-5 py-3 flex items-center gap-2">
-                  <ChevronDown className="w-4 h-4" />
-                  <span className="font-semibold text-sm">
+              {/* History */}
+              {result.history && result.history.length > 0 && (
+                <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                  <div className="bg-red-700 text-white px-5 py-3 flex items-center gap-2 font-semibold">
+                    <ChevronDown className="w-5 h-5" />
                     Application Progress History
-                  </span>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-emerald-600 text-white">
-                        <th className="text-left px-5 py-3 font-semibold w-32">
-                          Date
-                        </th>
-                        <th className="text-left px-5 py-3 font-semibold w-48">
-                          Status
-                        </th>
-                        <th className="text-left px-5 py-3 font-semibold">
-                          Remark
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(searchResult.history || [
-                        {
-                          date: new Date(
-                            searchResult.updated_at || Date.now()
-                          ).toLocaleDateString("en-GB"),
-                          status: config.label,
-                          remark: config.description,
-                        },
-                        {
-                          date: new Date(
-                            searchResult.created_at || Date.now()
-                          ).toLocaleDateString("en-GB"),
-                          status: "Application Submitted",
-                          remark: "Your application has been submitted.",
-                        },
-                      ]).map((row: any, i: number) => (
-                        <tr
-                          key={i}
-                          className={`border-b border-border last:border-0 ${
-                            i % 2 === 0 ? "bg-background" : "bg-muted/40"
-                          }`}
-                        >
-                          <td className="px-5 py-3.5 align-top text-foreground">
-                            {row.date}
-                          </td>
-                          <td className="px-5 py-3.5 align-top text-foreground font-medium">
-                            {row.status}
-                          </td>
-                          <td className="px-5 py-3.5 align-top text-muted-foreground">
-                            {row.remark}
-                          </td>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-green-600 text-white">
+                          <th className="text-left px-4 py-3 font-semibold w-32">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold w-56">Status</th>
+                          <th className="text-left px-4 py-3 font-semibold">Remark</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {result.history.map((row, idx) => (
+                          <tr
+                            key={idx}
+                            className={idx % 2 === 0 ? "bg-background" : "bg-muted/40"}
+                          >
+                            <td className="px-4 py-3 align-top text-foreground whitespace-nowrap">{row.date}</td>
+                            <td className="px-4 py-3 align-top text-foreground">{row.status}</td>
+                            <td className="px-4 py-3 align-top text-foreground">{row.remark}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div className="flex items-start gap-3 p-4 bg-muted/50 border border-border rounded-xl text-xs md:text-sm text-muted-foreground">
+                <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  Data shown is fetched live from the official EMGS portal. For any discrepancies, please verify directly at{" "}
+                  <a
+                    href="https://visa.educationmalaysia.gov.my/guidelines/status-application.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    visa.educationmalaysia.gov.my
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  .
                 </div>
               </div>
             </div>
           )}
 
-          {/* Empty / Not Found State */}
-          {hasSearched && !searchResult && !isLoading && error && (
-            <div className="max-w-2xl mx-auto mt-10">
-              <div className="bg-card border border-border rounded-2xl p-8 md:p-10 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-5">
-                  <Info className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-foreground mb-2">
-                  Application Not Found
-                </h3>
-                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                  We couldn&apos;t find an application matching the details
-                  you provided. Please double-check your passport number and
-                  nationality and try again.
-                </p>
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center gap-2 text-primary font-medium text-sm hover:underline"
-                >
-                  Need help? Contact our team
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+          {/* Not found state */}
+          {result && !result.found && (
+            <div className="bg-card border border-border rounded-2xl p-10 text-center">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-muted-foreground" />
               </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">No Application Found</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                We couldn&apos;t find an application matching these details. Please verify your travel document number and nationality, then try again.
+              </p>
             </div>
           )}
-
-          {/* Help CTA */}
-          <div className="max-w-3xl mx-auto mt-12">
-            <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-2xl p-6 md:p-8 border border-primary/10 flex flex-col md:flex-row items-center gap-5">
-              <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <Info className="w-6 h-6" />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="text-base md:text-lg font-bold text-foreground mb-1">
-                  Need help with your application?
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Our counselors are ready to support you at every step.
-                </p>
-              </div>
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-medium px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm flex-shrink-0"
-              >
-                Contact Us
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Disclaimer */}
-          <p className="max-w-3xl mx-auto text-xs text-muted-foreground text-center mt-6 leading-relaxed">
-            This tracker mirrors information from official sources. For
-            authoritative status updates, please visit the official portal{" "}
-            <a
-              href="https://visa.educationmalaysia.gov.my/emgs/application/searchForm/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline inline-flex items-center gap-1"
-            >
-              educationmalaysia.gov.my
-              <ExternalLink className="w-3 h-3" />
-            </a>
-            .
-          </p>
         </div>
       </main>
 
