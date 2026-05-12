@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import SwiperCore from 'swiper';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
@@ -40,14 +40,6 @@ const Hero = () => {
   return (
     <section className="pt-20 md:pt-24 pb-12 md:pb-16 bg-background">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        {/* Top label */}
-        <div className="flex justify-center mb-6 md:mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs md:text-sm font-medium">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Trusted by 5,000+ students worldwide</span>
-          </div>
-        </div>
-
         {/* Carousel with margins */}
         <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-secondary">
           <Swiper
