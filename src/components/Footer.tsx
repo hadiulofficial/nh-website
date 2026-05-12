@@ -1,248 +1,189 @@
 import { Button } from "@/components/ui/button";
 import {
-  MailIcon,
-  PhoneIcon,
-  MapPinIcon,
-  FacebookIcon,
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
   Youtube,
   GraduationCap,
   BookOpenCheck,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import Logo from "../assets/logo-white.png";
+
 const Footer = () => {
+  const services = [
+    "University Selection",
+    "Application Support",
+    "Visa Assistance",
+    "Accommodation",
+    "Pre-Departure",
+    "Post-Arrival Support",
+  ];
+
+  const socialLinks = [
+    { icon: Youtube, href: "https://www.youtube.com/@travelwithnoushad", label: "YouTube" },
+    { icon: Facebook, href: "https://web.facebook.com/nhglobaleducation", label: "Facebook" },
+    { icon: GraduationCap, href: "https://web.facebook.com/nhglobaleducationmalaysia", label: "Education Malaysia" },
+    { icon: BookOpenCheck, href: "https://web.facebook.com/studynhglobaleducation", label: "Study NH" },
+  ];
+
   return (
-    <footer className="bg-primary text-primary-foreground">
-      <div className="container mx-auto px-4 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-foreground text-background">
+      {/* CTA Section */}
+      <div className="border-b border-background/10">
+        <div className="container mx-auto px-6 lg:px-12 py-16">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-bold mb-2">
+                Ready to Start Your Journey?
+              </h3>
+              <p className="text-background/70">
+                Get free consultation from our expert advisors today.
+              </p>
+            </div>
+            <Link to="/contact">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground group">
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Footer */}
+      <div className="container mx-auto px-6 lg:px-12 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Company Info */}
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
+          <div className="lg:col-span-1">
+            <div className="flex items-center mb-6">
               <img
-                src={Logo}
-                alt="Nhglobaleducation Logo"
-                className="h-[40px] md:h-[50px] w-auto"
+                src="/favicon.png"
+                alt="NH Global Education Logo"
+                className="h-12 w-auto brightness-0 invert"
               />
             </div>
-            <p className="text-primary-foreground/80 leading-relaxed">
-              Your trusted partner for international education. We've been
+            <p className="text-background/70 leading-relaxed mb-6">
+              Your trusted partner for international education. We&apos;ve been
               helping students achieve their global education dreams for over a
               decade.
             </p>
-            <div className="flex space-x-4">
-              <Link to="https://www.youtube.com/@travelwithnoushad">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  <Youtube className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="https://web.facebook.com/nhglobaleducation">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  <FacebookIcon className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="https://web.facebook.com/nhglobaleducationmalaysia">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  <GraduationCap className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="https://web.facebook.com/studynhglobaleducation">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  <BookOpenCheck className="h-5 w-5" />
-                </Button>
-              </Link>
+            <div className="flex gap-2">
+              {socialLinks.map((social) => (
+                <Link key={social.label} to={social.href} target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-background/70 hover:text-background hover:bg-background/10 h-10 w-10"
+                  >
+                    <social.icon className="h-5 w-5" />
+                  </Button>
+                </Link>
+              ))}
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="text-xl font-semibold mb-6">Services</h3>
+            <h4 className="text-lg font-semibold mb-6">Services</h4>
             <ul className="space-y-3">
-              <li>
-                <a
-                  href="#"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  University Selection
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  Application Support
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  Visa Assistance
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  Accommodation
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  Pre-Departure
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  Post-Arrival Support
-                </a>
-              </li>
+              {services.map((service) => (
+                <li key={service}>
+                  <a
+                    href="#services"
+                    className="text-background/70 hover:text-background transition-colors text-sm"
+                  >
+                    {service}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Bangladesh Office */}
           <div>
-            <h3 className="text-xl font-semibold mb-6">Bangladesh Office</h3>
+            <h4 className="text-lg font-semibold mb-6">Bangladesh Office</h4>
             <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <MapPinIcon className="h-5 w-5 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-primary-foreground/80">
-                    Darus-Salam Arcade, 6th Floor (5th lift){" "}
-                  </p>
-                  <p className="text-primary-foreground/80">
-                    14 Purana Paltan, Dhaka 1000, Bangladesh
-                  </p>
-                </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 text-background/70" />
+                <p className="text-background/70 text-sm leading-relaxed">
+                  Darus-Salam Arcade, 6th Floor (5th lift)<br />
+                  14 Purana Paltan, Dhaka 1000, Bangladesh
+                </p>
               </div>
-              <div className="flex items-center space-x-3">
-                <PhoneIcon className="h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  +880 1961-656769
-                </span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 flex-shrink-0 text-background/70" />
+                <span className="text-background/70 text-sm">+880 1961-656769</span>
               </div>
-
-              <div className="flex items-center space-x-3">
-                <PhoneIcon className="h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  +880 1618-660577
-                </span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 flex-shrink-0 text-background/70" />
+                <span className="text-background/70 text-sm">+880 1618-660577</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <MailIcon className="h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  enquiry@nhglobaleducation
-                </span>
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 flex-shrink-0 text-background/70" />
+                <span className="text-background/70 text-sm">enquiry@nhglobaleducation</span>
               </div>
-            </div>
-
-            <div className="mt-6">
-              <h4 className="font-semibold mb-3">Office Hours</h4>
-              <p className="text-primary-foreground/80 text-sm">
-                Saturday - Thursday: 10:00 AM - 6:00 PM
-                <br />
-              </p>
+              <div className="mt-4 pt-4 border-t border-background/10">
+                <p className="text-xs text-background/50">
+                  Saturday - Thursday: 10:00 AM - 6:00 PM
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Contact Info */}
+          {/* Malaysia Office */}
           <div>
-            <h3 className="text-xl font-semibold mb-6">Malaysia Office</h3>
+            <h4 className="text-lg font-semibold mb-6">Malaysia Office</h4>
             <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <MapPinIcon className="h-5 w-5 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-primary-foreground/80">
-                    Suite 32-01, 32nd Floor, Menara Keck Seng (Opposite Pavilion
-                    Mall){" "}
-                  </p>
-                  <p className="text-primary-foreground/80">
-                    203 Jalan Bukit Bintang, 55100 Kuala Lumpur, Malaysia
-                  </p>
-                </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 text-background/70" />
+                <p className="text-background/70 text-sm leading-relaxed">
+                  Suite 32-01, 32nd Floor, Menara Keck Seng<br />
+                  203 Jalan Bukit Bintang, 55100 Kuala Lumpur
+                </p>
               </div>
-              <div className="flex items-center space-x-3">
-                <PhoneIcon className="h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  {" "}
-                  +60 11-6117 5133
-                </span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 flex-shrink-0 text-background/70" />
+                <span className="text-background/70 text-sm">+60 11-6117 5133</span>
               </div>
-
-              <div className="flex items-center space-x-3">
-                <PhoneIcon className="h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  +60 11-6178 5257
-                </span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 flex-shrink-0 text-background/70" />
+                <span className="text-background/70 text-sm">+60 11-6178 5257</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <MailIcon className="h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  enquiry@nhglobaleducation
-                </span>
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 flex-shrink-0 text-background/70" />
+                <span className="text-background/70 text-sm">enquiry@nhglobaleducation</span>
               </div>
-            </div>
-
-            <div className="mt-6">
-              <h4 className="font-semibold mb-3">Office Hours</h4>
-              <p className="text-primary-foreground/80 text-sm">
-                Monday - Saturday: 10:00 AM - 6:00 PM
-                <br />
-              </p>
+              <div className="mt-4 pt-4 border-t border-background/10">
+                <p className="text-xs text-background/50">
+                  Monday - Saturday: 10:00 AM - 6:00 PM
+                </p>
+              </div>
             </div>
           </div>
         </div>
-        {/* Bottom Bar */}
-        <div className="border-t border-primary-foreground/20 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-primary-foreground/60 text-sm">
-            © 2025{" "}
-            <a href="https://softulas.com/" className="text-white">
-              Softulas
-            </a>
-            . All rights reserved.
-          </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a
-              href="#"
-              className="text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className="text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors"
-            >
-              Terms of Service
-            </a>
-            <a
-              href="#"
-              className="text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors"
-            >
-              Cookie Policy
-            </a>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-background/10">
+        <div className="container mx-auto px-6 lg:px-12 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-background/50 text-sm">
+              © 2025{" "}
+              <a href="https://softulas.com/" className="text-background/70 hover:text-background transition-colors">
+                Softulas
+              </a>
+              . All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <a href="#" className="text-background/50 hover:text-background text-sm transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="text-background/50 hover:text-background text-sm transition-colors">
+                Terms of Service
+              </a>
+            </div>
           </div>
         </div>
       </div>
