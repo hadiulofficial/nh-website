@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import {  MenuIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Logo from "../assets/logo.png"
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -14,7 +14,7 @@ const Navbar = () => {
           <Link to="/">
             <div className="flex">
               <img
-                src={Logo}
+                src="/favicon.png"
                 alt="Nhglobaleducation Logo"
                 className="h-[40px] md:h-[50px] w-auto"
               />
