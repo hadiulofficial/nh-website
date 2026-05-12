@@ -1,598 +1,314 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import axios from "axios";
+import parse from "html-react-parser";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Search,
-  MapPin,
-  Users,
-  Calendar,
-  Award,
-  GraduationCap,
-  ArrowRight,
-  Globe2,
-  Building2,
-  Sparkles,
-  X,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { CalendarIcon, MapPinIcon, SearchIcon, UsersIcon } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+
+// Placeholder image (used as fallback if data.image is missing)
+const DEFAULT_IMAGE = "https://via.placeholder.com/400x200?text=University+Campus";
 
 interface University {
   id: number;
   name: string;
-  shortName: string;
   city: string;
   country: string;
-  countryCode: string;
   founded: string;
   students: string;
   description: string;
   programs: string[];
+  tuitionFee: string;
+  acceptanceRate: string;
+  applicationDeadline: string;
   ranking: string;
-  featured?: boolean;
   image: string;
 }
 
-const COUNTRIES = [
-  { code: "all", name: "All Countries", flag: "🌍" },
-  { code: "MY", name: "Malaysia", flag: "🇲🇾" },
-  { code: "UK", name: "United Kingdom", flag: "🇬🇧" },
-  { code: "AU", name: "Australia", flag: "🇦🇺" },
-  { code: "US", name: "United States", flag: "🇺🇸" },
-  { code: "CA", name: "Canada", flag: "🇨🇦" },
-  { code: "DE", name: "Germany", flag: "🇩🇪" },
-];
+interface Country {
+  id: number;
+  name: string;
+}
 
-const UNIVERSITIES: University[] = [
-  {
-    id: 1,
-    name: "City University Malaysia",
-    shortName: "CityU",
-    city: "Petaling Jaya",
-    country: "Malaysia",
-    countryCode: "MY",
-    founded: "1984",
-    students: "12,000+",
-    description:
-      "A premier private university offering industry-relevant programs in business, engineering, and creative arts.",
-    programs: ["Business", "Engineering", "IT", "Design"],
-    ranking: "Top 50 Malaysia",
-    featured: true,
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 2,
-    name: "INTI International University",
-    shortName: "INTI",
-    city: "Nilai",
-    country: "Malaysia",
-    countryCode: "MY",
-    founded: "1986",
-    students: "17,000+",
-    description:
-      "Part of the Laureate International Universities network with strong industry partnerships and global recognition.",
-    programs: ["Business", "Engineering", "Hospitality", "Health Sciences"],
-    ranking: "QS 5-Star Rated",
-    featured: true,
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 3,
-    name: "University of Cyberjaya",
-    shortName: "UoC",
-    city: "Cyberjaya",
-    country: "Malaysia",
-    countryCode: "MY",
-    founded: "2005",
-    students: "8,500+",
-    description:
-      "Leading institution for medical, pharmacy, and health sciences education in Malaysia's tech hub.",
-    programs: ["Medicine", "Pharmacy", "Health Sciences", "Psychology"],
-    ranking: "Top Medical School",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 4,
-    name: "SEGi University & Colleges",
-    shortName: "SEGi",
-    city: "Kota Damansara",
-    country: "Malaysia",
-    countryCode: "MY",
-    founded: "1977",
-    students: "25,000+",
-    description:
-      "One of Malaysia's largest private higher education providers with 5 campuses nationwide.",
-    programs: ["Business", "Engineering", "Medicine", "Education"],
-    ranking: "QS 5-Star University",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 5,
-    name: "Asia Pacific University",
-    shortName: "APU",
-    city: "Kuala Lumpur",
-    country: "Malaysia",
-    countryCode: "MY",
-    founded: "1993",
-    students: "13,000+",
-    description:
-      "Premier university for technology and innovation with strong tech industry connections.",
-    programs: ["IT", "Computing", "Business", "Engineering"],
-    ranking: "Premier Digital Tech",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 6,
-    name: "Taylor's University",
-    shortName: "Taylor's",
-    city: "Subang Jaya",
-    country: "Malaysia",
-    countryCode: "MY",
-    founded: "1969",
-    students: "14,000+",
-    description:
-      "Ranked #1 private university in Malaysia and Southeast Asia by QS World University Rankings.",
-    programs: ["Hospitality", "Business", "Design", "Engineering"],
-    ranking: "#1 Private Malaysia",
-    featured: true,
-    image: "/placeholder.svg?height=400&width=600",
-  },
-];
+interface Pagination {
+  current_page: number;
+  total_pages: number;
+  total_items: number;
+  per_page: number;
+}
 
 const Universities = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("all");
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [countries, setCountries] = useState<Country[]>([{ id: 0, name: "all" }]);
+  const [pagination, setPagination] = useState<Pagination>({
+    current_page: 1,
+    total_pages: 1,
+    total_items: 0,
+    per_page: 5,
+  });
+  const [loading, setLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredUniversities = useMemo(() => {
-    return UNIVERSITIES.filter((uni) => {
-      const matchesCountry =
-        selectedCountry === "all" || uni.countryCode === selectedCountry;
-      const matchesSearch =
-        !searchTerm ||
-        uni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        uni.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        uni.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        uni.programs.some((p) =>
-          p.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch universities with query parameters
+  const fetchUniversities = async (params: { [key: string]: string }) => {
+    setLoading(true);
+    setImageLoading(true);
+    setError("");
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+    const storageUrl = import.meta.env.VITE_STORAGE_URL || "http://localhost:5000/storage";
+    console.log("Fetching universities with base URL:", baseUrl);
+    console.log("Storage URL:", storageUrl);
+    console.log("Request params:", params);
+
+    try {
+      const response = await axios.get(`${baseUrl}/api/universities`, { params });
+      console.log("Universities response:", response.data);
+      if (response.data.status === "success") {
+        const universitiesData = response.data.data.map((data: any) => {
+          return {
+            id: data.id,
+            name: data.name,
+            image: data.image ? `${storageUrl}/${data.image}` : DEFAULT_IMAGE,
+          };
+        });
+
+        // Wait for all images to load
+        const imagePromises = universitiesData.map((uni) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.src = uni.image;
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Resolve even on error to avoid hanging
+          })
         );
-      return matchesCountry && matchesSearch;
-    });
-  }, [searchTerm, selectedCountry]);
 
-  const countryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: UNIVERSITIES.length };
-    UNIVERSITIES.forEach((uni) => {
-      counts[uni.countryCode] = (counts[uni.countryCode] || 0) + 1;
-    });
-    return counts;
+        await Promise.all(imagePromises);
+        console.log("All images loaded");
+
+        setUniversities(universitiesData);
+        setPagination(response.data.pagination);
+        console.log("Set universities:", universitiesData);
+        console.log("Set pagination:", response.data.pagination);
+      } else {
+        setError("No universities found.");
+        console.warn("Unexpected response status:", response.data);
+      }
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || "Failed to fetch universities.";
+      setError(errorMsg);
+      console.error("Error fetching universities:", err.message, err.response?.data);
+    } finally {
+      setLoading(false);
+      setImageLoading(false);
+      console.log("Loading and imageLoading set to false");
+    }
+  };
+
+  // Fetch countries on component mount
+  useEffect(() => {
+    const fetchCountries = async () => {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      console.log("Fetching countries with base URL:", baseUrl);
+
+      try {
+        const response = await axios.get(`${baseUrl}/api/countries`);
+        console.log("Countries response:", response.data);
+        if (response.data.status === "success") {
+          setCountries([{ id: 0, name: "all" }, ...response.data.data]);
+          console.log("Set countries:", [{ id: 0, name: "all" }, ...response.data.data]);
+        } else {
+          setError("Failed to fetch countries.");
+          console.warn("Unexpected countries response status:", response.data);
+        }
+      } catch (err: any) {
+        const errorMsg = err.response?.data?.message || "Failed to fetch countries.";
+        setError(errorMsg);
+        console.error("Error fetching countries:", err.message, err.response?.data);
+      }
+    };
+
+    fetchCountries();
+
+    // Initial fetch for universities
+    fetchUniversities({ limit: "5", page: "1" });
   }, []);
 
-  const activeCountry = COUNTRIES.find((c) => c.code === selectedCountry);
-  const hasActiveFilters = searchTerm || selectedCountry !== "all";
+  // Handle search button click
+  const handleSearch = () => {
+    const params: { [key: string]: string } = { limit: "5", page: "1" };
+    if (searchTerm) params.search = searchTerm;
+    if (selectedCountry !== "all") {
+      const country = countries.find((c) => c.name === selectedCountry);
+      if (country && country.id !== 0) params.country = country.id.toString();
+    }
+    console.log("Search triggered with params:", params);
+    setPagination({ ...pagination, current_page: 1 }); // Reset to page 1 on new search
+    fetchUniversities(params);
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    const params: { [key: string]: string } = { limit: "5", page: newPage.toString() };
+    if (searchTerm) params.search = searchTerm;
+    if (selectedCountry !== "all") {
+      const country = countries.find((c) => c.name === selectedCountry);
+      if (country && country.id !== 0) params.country = country.id.toString();
+    }
+    console.log("Page change triggered with params:", params);
+    fetchUniversities(params);
+  };
+
+  // Handle loading state with spinner
+  if (loading || imageLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-foreground text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-foreground mb-4">{error}</h1>
+          <Button onClick={handleSearch}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-24 md:pt-28 pb-8 md:pb-10">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/85 px-6 py-14 md:px-12 md:py-20">
-            {/* Radial gradient overlays */}
-            <div
-              className="absolute inset-0 opacity-30"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 0%, transparent 50%)",
-              }}
-            />
+      <section className="relative bg-gradient-hero py-20 pt-[120px]">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-2xl md:text-4xl font-bold text-white mb-6">
+            World-Class Universities
+          </h1>
+          <p className="md:text-xl text-white/90 max-w-2xl mx-auto">
+            Discover top-ranked universities worldwide and find your perfect academic destination.
+          </p>
+        </div>
+      </section>
 
-            <div className="relative max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs md:text-sm font-medium mb-6">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>150+ Partner Universities Worldwide</span>
-              </div>
-
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-5 text-balance leading-tight">
-                Find Your Perfect University
-              </h1>
-              <p className="text-base md:text-lg text-white/90 max-w-2xl mx-auto text-pretty leading-relaxed">
-                Explore world-class universities across the globe. Filter by
-                country, search by program, and discover your ideal academic
-                destination.
-              </p>
+      {/* Search and Filter */}
+      <section className="py-8 bg-secondary/30">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+            <div className="relative flex-1 max-w-md w-full">
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search universities..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 "
+              />
             </div>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="px-4  w-full md:w-auto py-2 border border-border rounded-md bg-background text-foreground"
+            >
+              {countries.map((country) => (
+                <option key={country.id} value={country.name}>
+                  {country.name === "all" ? "All Countries" : country.name}
+                </option>
+              ))}
+            </select>
+            <Button onClick={handleSearch} className="bg-primary text-primary-foreground w-full md:w-auto">
+              Search
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Unified Search & Filter Bar */}
-      <section className="pb-6">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="relative max-w-4xl mx-auto -mt-16 md:-mt-20">
-            <div className="bg-card rounded-2xl border border-border shadow-xl p-3 md:p-4">
-              <div className="flex flex-col md:flex-row gap-3">
-                {/* Search Input */}
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                  <Input
-                    type="text"
-                    placeholder="Search universities, cities, or programs…"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 pr-10 h-12 md:h-13 text-base rounded-xl border-border bg-background focus-visible:ring-primary"
-                  />
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Country Select Dropdown */}
-                <div className="md:w-64">
-                  <Select
-                    value={selectedCountry}
-                    onValueChange={setSelectedCountry}
-                  >
-                    <SelectTrigger
-                      className="h-12 md:h-13 rounded-xl border-border bg-background text-base px-4 focus:ring-primary"
-                      aria-label="Filter by country"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg leading-none">
-                          {activeCountry?.flag}
-                        </span>
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      {COUNTRIES.map((country) => {
-                        const count = countryCounts[country.code] || 0;
-                        if (country.code !== "all" && count === 0) return null;
-                        return (
-                          <SelectItem
-                            key={country.code}
-                            value={country.code}
-                            className="py-2.5 rounded-lg cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <span className="text-base leading-none">
-                                {country.flag}
-                              </span>
-                              <span className="font-medium">{country.name}</span>
-                              <span className="text-xs text-muted-foreground ml-1">
-                                ({count})
-                              </span>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Filter Pills */}
-      <section className="pb-6">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-3">
-            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Quick Filter
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {COUNTRIES.map((country) => {
-              const count = countryCounts[country.code] || 0;
-              const isActive = selectedCountry === country.code;
-              if (country.code !== "all" && count === 0) return null;
-              return (
-                <button
-                  key={country.code}
-                  onClick={() => setSelectedCountry(country.code)}
-                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all border ${
-                    isActive
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-card text-foreground border-border hover:border-primary/40 hover:bg-primary/5"
-                  }`}
-                >
-                  <span className="text-sm leading-none">{country.flag}</span>
-                  <span>{country.name}</span>
-                  <span
-                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Strip */}
-      <section className="pb-8">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {[
-              { icon: Building2, label: "Universities", value: "150+" },
-              { icon: Globe2, label: "Countries", value: "12+" },
-              { icon: GraduationCap, label: "Programs", value: "500+" },
-              { icon: Award, label: "Top Ranked", value: "QS 5-Star" },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border"
+      {/* Universities Grid */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {universities.map((university) => (
+              <Card
+                key={university.id}
+                className="group hover:shadow-glow transition-all duration-300 cursor-pointer overflow-hidden"
+                onClick={() => (window.location.href = `/university/${university.id}`)}
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <stat.icon className="w-5 h-5 text-primary" />
+                <div className="relative">
+                  <img
+                    src={university.image}
+                    alt={university.name}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-lg md:text-xl font-bold text-foreground leading-none">
-                    {stat.value}
+
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl text-foreground group-hover:text-primary transition-colors">
+                    {university.name}
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full mt-4"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/university/${university.id}`;
+                      }}
+                    >
+                      Learn More
+                    </Button>
                   </div>
-                  <div className="text-xs md:text-sm text-muted-foreground mt-1 truncate">
-                    {stat.label}
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Results Header */}
-      <section className="pb-4">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-foreground">
-                {filteredUniversities.length}{" "}
-                {filteredUniversities.length === 1
-                  ? "University"
-                  : "Universities"}{" "}
-                Found
-              </h2>
-              {hasActiveFilters && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedCountry !== "all" && (
-                    <>
-                      in <span className="font-medium text-foreground">{activeCountry?.name}</span>
-                    </>
-                  )}
-                  {searchTerm && (
-                    <>
-                      {selectedCountry !== "all" ? " matching " : "matching "}
-                      <span className="font-medium text-foreground">
-                        "{searchTerm}"
-                      </span>
-                    </>
-                  )}
-                </p>
-              )}
-            </div>
-            {hasActiveFilters && (
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCountry("all");
-                }}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-              >
-                <X className="w-4 h-4" />
-                Clear filters
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* University Grid */}
-      <section className="pb-16 md:pb-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          {filteredUniversities.length === 0 ? (
-            <div className="text-center py-16 md:py-24 bg-card rounded-3xl border border-border">
-              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
-                <Search className="w-10 h-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
-                No Universities Found
-              </h3>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
-                We couldn&apos;t find any universities matching your filters. Try
-                adjusting your search or selecting a different country.
+          {universities.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">
+                No universities found matching your search criteria.
               </p>
-              <Button
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCountry("all");
-                }}
-                variant="outline"
-                className="rounded-full"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7">
-              {filteredUniversities.map((university) => {
-                const countryFlag =
-                  COUNTRIES.find((c) => c.code === university.countryCode)
-                    ?.flag || "🌍";
-                return (
-                  <Link
-                    key={university.id}
-                    to={`/university/${university.id}`}
-                    className="group relative bg-card rounded-3xl border border-border overflow-hidden hover:shadow-xl hover:border-primary/30 hover:-translate-y-1 transition-all duration-300"
-                  >
-                    {/* Image */}
-                    <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
-                      <img
-                        src={university.image || "/placeholder.svg"}
-                        alt={university.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-
-                      {/* Country flag badge */}
-                      <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-sm text-xs font-semibold text-foreground shadow-sm">
-                        <span className="text-base leading-none">
-                          {countryFlag}
-                        </span>
-                        <span>{university.country}</span>
-                      </div>
-
-                      {/* Featured badge */}
-                      {university.featured && (
-                        <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-semibold shadow-sm">
-                          <Sparkles className="w-3 h-3" />
-                          <span>Featured</span>
-                        </div>
-                      )}
-
-                      {/* Ranking badge */}
-                      <div className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-medium">
-                        <Award className="w-3 h-3" />
-                        <span>{university.ranking}</span>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span>
-                          {university.city}, {university.country}
-                        </span>
-                      </div>
-
-                      <h3 className="text-lg md:text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors leading-tight text-balance">
-                        {university.name}
-                      </h3>
-
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
-                        {university.description}
-                      </p>
-
-                      {/* Programs */}
-                      <div className="flex flex-wrap gap-1.5 mb-5">
-                        {university.programs.slice(0, 3).map((program) => (
-                          <Badge
-                            key={program}
-                            variant="secondary"
-                            className="text-xs font-medium rounded-full"
-                          >
-                            {program}
-                          </Badge>
-                        ))}
-                        {university.programs.length > 3 && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs font-medium rounded-full"
-                          >
-                            +{university.programs.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Stats row */}
-                      <div className="flex items-center gap-4 pb-4 mb-4 border-b border-border">
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Users className="w-3.5 h-3.5" />
-                          <span>{university.students}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>Est. {university.founded}</span>
-                        </div>
-                      </div>
-
-                      {/* CTA */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-primary group-hover:underline">
-                          View Details
-                        </span>
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
-                          <ArrowRight className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
             </div>
           )}
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="pb-16 md:pb-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/80 px-6 py-12 md:px-12 md:py-16">
-            <div
-              className="absolute inset-0 opacity-20"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 80% 20%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,255,255,0.3) 0%, transparent 50%)",
-              }}
-            />
-            <div className="relative grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 text-balance leading-tight">
-                  Can&apos;t decide which university is right for you?
-                </h2>
-                <p className="text-white/90 text-base md:text-lg leading-relaxed">
-                  Our expert counsellors will guide you through the selection
-                  process, applications, and admissions—at no cost to you.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
-                <Link to="/contact">
-                  <Button
-                    size="lg"
-                    className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
-                  >
-                    Get Free Consultation
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </Link>
-                <Link to="/team">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-full sm:w-auto"
-                  >
-                    Meet Our Team
-                  </Button>
-                </Link>
-              </div>
+          {/* Pagination Controls */}
+          {universities.length > 0 && (
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <Button
+                onClick={() => handlePageChange(pagination.current_page - 1)}
+                disabled={pagination.current_page === 1}
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <span className="text-foreground">
+                Page {pagination.current_page} of {pagination.total_pages}
+              </span>
+              <Button
+                onClick={() => handlePageChange(pagination.current_page + 1)}
+                disabled={pagination.current_page === pagination.total_pages}
+                variant="outline"
+              >
+                Next
+              </Button>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
