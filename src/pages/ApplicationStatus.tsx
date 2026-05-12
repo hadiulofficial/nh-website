@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,13 +12,8 @@ import {
 } from "@/components/ui/select";
 import {
   AlertCircle,
-  CheckCircle,
-  Clock,
   Search,
-  XCircle,
   FileText,
-  Globe,
-  Shield,
   Loader2,
   ExternalLink,
   Info,
@@ -209,7 +203,7 @@ const DonutChart = ({ percentage }: { percentage: number }) => {
   };
 
   return (
-    <div className="relative w-48 h-48 md:w-56 md:h-56">
+    <div className="relative w-44 h-44 md:w-52 md:h-52">
       <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
         {/* Background circle */}
         <circle
@@ -248,7 +242,7 @@ const DonutChart = ({ percentage }: { percentage: number }) => {
 
 // Small ring icon for color info
 const RingIcon = ({ color }: { color: string }) => (
-  <svg className="w-6 h-6" viewBox="0 0 24 24">
+  <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24">
     <circle
       cx="12"
       cy="12"
@@ -340,71 +334,33 @@ const ApplicationStatus = () => {
       </Helmet>
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="pt-20 md:pt-24 pb-12 md:pb-16 bg-background">
+      {/* Main Content - Form at Top */}
+      <section className="pt-24 md:pt-28 pb-16 md:pb-24">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="relative rounded-2xl md:rounded-3xl overflow-hidden bg-primary">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
-            <div className="relative py-16 md:py-24 px-6 md:px-12 text-center">
-              <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-primary-foreground/90 text-sm font-medium px-4 py-2 rounded-full mb-6">
-                <Search className="w-4 h-4" />
-                EMGS Application Tracker
-              </span>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-4 text-balance">
+          <div className="max-w-3xl mx-auto">
+            {/* Page Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
                 Check Application Status
               </h1>
-              <p className="text-base md:text-lg text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed">
-                Enter your travel document number and nationality to check the current status of your Malaysia student visa application.
+              <p className="text-muted-foreground">
+                Enter your travel document number and nationality to track your application
               </p>
             </div>
-          </div>
 
-          {/* Feature Cards */}
-          <div className="mt-8 md:mt-10 grid grid-cols-3 gap-4 md:gap-6">
-            {[
-              { icon: Shield, label: "Secure & Private", desc: "Your data is protected" },
-              { icon: Clock, label: "Real-time Updates", desc: "Instant status check" },
-              { icon: Globe, label: "24/7 Available", desc: "Check anytime, anywhere" },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="bg-card border border-border rounded-2xl p-4 md:p-6 text-center hover:shadow-lg hover:border-primary/20 transition-all duration-300"
-              >
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                  <item.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-                </div>
-                <div className="text-sm md:text-base font-semibold text-foreground mb-1">
-                  {item.label}
-                </div>
-                <div className="text-xs md:text-sm text-muted-foreground hidden md:block">
-                  {item.desc}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Search Form Section */}
-      <section className="pb-16 md:pb-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className={`mx-auto transition-all duration-500 ${searchResult?.found ? "max-w-4xl" : "max-w-2xl"}`}>
-            {/* Search Card */}
-            <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
-              <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-foreground">Check Application Status</h2>
-                    <p className="text-sm text-muted-foreground">Enter your details below</p>
-                  </div>
+            {/* Search Form Card */}
+            <Card className="border border-border rounded-2xl overflow-hidden shadow-sm">
+              <div className="bg-primary px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary-foreground" />
+                  <span className="font-semibold text-primary-foreground text-sm uppercase tracking-wide">
+                    Check Application Status
+                  </span>
                 </div>
               </div>
 
-              <CardContent className="p-6 md:p-8">
-                <div className="grid md:grid-cols-2 gap-6">
+              <CardContent className="p-5 md:p-6">
+                <div className="space-y-5">
                   {/* Travel Document Number Field */}
                   <div className="space-y-2">
                     <Label htmlFor="passport" className="text-sm font-medium text-foreground">
@@ -412,10 +368,10 @@ const ApplicationStatus = () => {
                     </Label>
                     <Input
                       id="passport"
-                      placeholder="e.g., B12345678"
+                      placeholder="Enter your passport number"
                       value={passportNumber}
                       onChange={(e) => setPassportNumber(e.target.value.toUpperCase())}
-                      className="h-12 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      className="h-11 rounded-lg border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                   </div>
 
@@ -427,7 +383,7 @@ const ApplicationStatus = () => {
                     <Select value={nationality} onValueChange={setNationality}>
                       <SelectTrigger
                         id="nationality"
-                        className="h-12 rounded-xl border-border bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        className="h-11 rounded-lg border-border bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       >
                         <SelectValue placeholder="Select your nationality" />
                       </SelectTrigger>
@@ -440,146 +396,145 @@ const ApplicationStatus = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                {/* Error Message */}
-                {error && (
-                  <div className="mt-6 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-200">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    <p className="text-sm">{error}</p>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <Button
-                  onClick={handleSearch}
-                  disabled={isLoading}
-                  className="w-full h-12 rounded-xl text-base font-medium shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all mt-6"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-5 h-5 mr-2" />
-                      Track Application
-                    </>
+                  {/* Error Message */}
+                  {error && (
+                    <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg border border-red-200">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                      <p className="text-sm">{error}</p>
+                    </div>
                   )}
-                </Button>
+
+                  {/* Submit Button */}
+                  <Button
+                    onClick={handleSearch}
+                    disabled={isLoading}
+                    className="w-full h-11 rounded-lg text-base font-medium"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-5 h-5 mr-2" />
+                        Check Status
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
             {/* Search Result - Success - EMGS Style */}
             {searchResult?.found && (
-              <div className="mt-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mt-8 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Summary Card - EMGS Style */}
-                <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+                <Card className="border border-border rounded-lg overflow-hidden">
+                  <CardContent className="p-5 md:p-6">
+                    <div className="flex flex-col md:flex-row gap-6 md:gap-8">
                       {/* Donut Chart - Left Side */}
-                      <div className="flex justify-center lg:justify-start">
+                      <div className="flex justify-center md:justify-start">
                         <DonutChart percentage={searchResult.summary?.percentageNum || 0} />
                       </div>
 
                       {/* Summary Details - Right Side */}
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-foreground mb-1 border-b-2 border-primary pb-2">
+                        <h3 className="text-lg font-bold text-foreground border-b-2 border-foreground pb-2 mb-4">
                           Summary
                         </h3>
                         
-                        <div className="mt-4 space-y-3">
+                        <div className="space-y-2.5 text-sm">
                           {searchResult.summary?.fullName || searchResult.name ? (
-                            <div className="flex flex-wrap">
-                              <span className="font-semibold text-foreground w-52">Full Name:</span>
+                            <div className="flex flex-wrap gap-1">
+                              <span className="font-semibold text-foreground min-w-[180px]">Full Name:</span>
                               <span className="text-muted-foreground">{searchResult.summary?.fullName || searchResult.name}</span>
                             </div>
                           ) : null}
                           
-                          <div className="flex flex-wrap">
-                            <span className="font-semibold text-foreground w-52">Travel Document Number:</span>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="font-semibold text-foreground min-w-[180px]">Travel Document Number:</span>
                             <span className="text-muted-foreground">{searchResult.summary?.travelDocument || searchResult.passport}</span>
                           </div>
                           
                           {searchResult.summary?.applicationNumber && (
-                            <div className="flex flex-wrap">
-                              <span className="font-semibold text-foreground w-52">Application Number:</span>
+                            <div className="flex flex-wrap gap-1">
+                              <span className="font-semibold text-foreground min-w-[180px]">Application Number:</span>
                               <span className="text-muted-foreground">{searchResult.summary.applicationNumber}</span>
                             </div>
                           )}
                           
                           {searchResult.summary?.applicationType && (
-                            <div className="flex flex-wrap">
-                              <span className="font-semibold text-foreground w-52">Application Type:</span>
+                            <div className="flex flex-wrap gap-1">
+                              <span className="font-semibold text-foreground min-w-[180px]">Application Type:</span>
                               <span className="text-muted-foreground">{searchResult.summary.applicationType}</span>
                             </div>
                           )}
                           
                           {(searchResult.summary?.applicationStatus || searchResult.status) && (
-                            <div className="flex flex-wrap">
-                              <span className="font-semibold text-foreground w-52">Application Status:</span>
+                            <div className="flex flex-wrap gap-1">
+                              <span className="font-semibold text-foreground min-w-[180px]">Application Status:</span>
                               <span className="text-muted-foreground">{searchResult.summary?.applicationStatus || searchResult.status}</span>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-
-                    {/* Important Notice - Yellow Bar */}
-                    <div className="mt-8 bg-amber-400 text-amber-900 px-4 py-3 rounded-lg">
-                      <p className="text-sm font-medium">
-                        <strong>IMPORTANT:</strong> Kindly read the explanation below to understand the percentage.
-                      </p>
-                    </div>
                   </CardContent>
+                  
+                  {/* Important Notice */}
+                  <div className="bg-amber-400 px-5 py-3">
+                    <p className="text-sm text-amber-900 font-medium">
+                      <span className="font-bold">IMPORTANT:</span> Kindly read the explanation below to understand the percentage.
+                    </p>
+                  </div>
                 </Card>
 
-                {/* Percentage Meaning & Color Info Card */}
-                <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="grid md:grid-cols-2 gap-8">
-                      {/* What does the percentage mean? */}
-                      <div>
-                        <h4 className="text-lg font-semibold text-foreground mb-4">What does the percentage mean?</h4>
+                {/* Percentage Meaning & Color Info */}
+                <Card className="border border-border rounded-lg overflow-hidden">
+                  <CardContent className="p-5 md:p-6">
+                    <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                      {/* What does percentage mean */}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground mb-3">What does the percentage mean?</h4>
                         <div className="flex items-center gap-3">
-                          <Badge 
-                            className="text-lg px-4 py-2 font-bold"
+                          <span 
+                            className="px-3 py-1.5 rounded text-white text-sm font-bold"
                             style={{ 
-                              backgroundColor: searchResult.summary?.percentageNum && searchResult.summary.percentageNum >= 100 
+                              backgroundColor: (searchResult.summary?.percentageNum || 0) >= 100 
                                 ? "#22c55e" 
-                                : searchResult.summary?.percentageNum && searchResult.summary.percentageNum >= 50 
+                                : (searchResult.summary?.percentageNum || 0) >= 50 
                                   ? "#f59e0b" 
-                                  : "#dc2626",
-                              color: "white"
+                                  : "#dc2626" 
                             }}
                           >
                             {searchResult.summary?.percentageNum || 0}%
-                          </Badge>
-                          <span className="text-muted-foreground">
+                          </span>
+                          <span className="text-sm text-muted-foreground">
                             {getPercentageMeaning(searchResult.summary?.percentageNum, searchResult.summary?.applicationType)}
                           </span>
                         </div>
                       </div>
 
-                      {/* Color Info */}
-                      <div>
-                        <div className="inline-block bg-red-600 text-white px-4 py-1 rounded-t-lg font-semibold text-sm">
-                          Color Info:
-                        </div>
-                        <div className="border-2 border-red-600 rounded-b-lg rounded-tr-lg overflow-hidden">
-                          <div className="p-4 space-y-3">
-                            <div className="flex items-start gap-3">
+                      {/* Color Info Box */}
+                      <div className="md:w-80">
+                        <div className="border border-red-500 rounded overflow-hidden">
+                          <div className="bg-red-500 px-3 py-2">
+                            <span className="text-white font-semibold text-sm">Color Info:</span>
+                          </div>
+                          <div className="divide-y divide-gray-200">
+                            <div className="flex items-start gap-3 p-3">
                               <RingIcon color="#22c55e" />
-                              <span className="text-sm text-muted-foreground">Your application is progressing accordingly.</span>
+                              <span className="text-xs text-muted-foreground">Your application is progressing accordingly.</span>
                             </div>
-                            <div className="flex items-start gap-3 pt-2 border-t border-border">
+                            <div className="flex items-start gap-3 p-3">
                               <RingIcon color="#f59e0b" />
-                              <span className="text-sm text-muted-foreground">Your application is pending additional documents or correction by your institution.</span>
+                              <span className="text-xs text-muted-foreground">Your application is pending additional documents or correction by your institution.</span>
                             </div>
-                            <div className="flex items-start gap-3 pt-2 border-t border-border">
+                            <div className="flex items-start gap-3 p-3">
                               <RingIcon color="#dc2626" />
-                              <span className="text-sm text-muted-foreground">Your application has been rejected/expired at the current stage. Please contact your institution for advice.</span>
+                              <span className="text-xs text-muted-foreground">Your application has been rejected/expired at the current stage. Please contact your institution for advice.</span>
                             </div>
                           </div>
                         </div>
@@ -588,40 +543,47 @@ const ApplicationStatus = () => {
                   </CardContent>
                 </Card>
 
-                {/* Application Progress History - Collapsible */}
+                {/* Application Progress History */}
                 {searchResult.history && searchResult.history.length > 0 && (
-                  <Card className="border border-border rounded-2xl overflow-hidden shadow-lg">
-                    {/* Red Header */}
+                  <Card className="border border-border rounded-lg overflow-hidden">
+                    {/* Collapsible Header */}
                     <button
                       onClick={() => setHistoryExpanded(!historyExpanded)}
-                      className="w-full bg-red-700 text-white px-6 py-4 flex items-center justify-between hover:bg-red-800 transition-colors"
+                      className="w-full bg-red-600 hover:bg-red-700 px-5 py-3 flex items-center justify-between transition-colors"
                     >
-                      <span className="font-semibold flex items-center gap-2">
-                        <ChevronDown className={`w-5 h-5 transition-transform ${historyExpanded ? "" : "-rotate-90"}`} />
-                        Application Progress History
-                      </span>
+                      <span className="font-semibold text-white text-sm">Application Progress History</span>
+                      <ChevronDown 
+                        className={`w-5 h-5 text-white transition-transform duration-200 ${
+                          historyExpanded ? "rotate-180" : ""
+                        }`} 
+                      />
                     </button>
 
+                    {/* History Table */}
                     {historyExpanded && (
                       <div className="overflow-x-auto">
                         <table className="w-full">
-                          {/* Green Table Header */}
-                          <thead className="bg-green-600 text-white">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-sm font-semibold w-36">Date</th>
-                              <th className="px-6 py-3 text-left text-sm font-semibold w-48">Status</th>
-                              <th className="px-6 py-3 text-left text-sm font-semibold">Remark</th>
+                          <thead>
+                            <tr className="bg-green-600 text-white">
+                              <th className="px-4 py-3 text-left text-sm font-semibold w-32">Date</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold w-44">Status</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Remark</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-border bg-card">
-                            {[...searchResult.history].reverse().map((entry, index) => (
-                              <tr key={index} className="hover:bg-muted/50 transition-colors">
-                                <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">
+                          <tbody className="divide-y divide-gray-200">
+                            {searchResult.history.map((entry, index) => (
+                              <tr 
+                                key={index} 
+                                className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                              >
+                                <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
                                   {entry.date}
                                 </td>
-                                <td className="px-6 py-4 text-sm text-foreground">{entry.status}</td>
-                                <td className="px-6 py-4 text-sm text-muted-foreground">
-                                  {entry.remark || "-"}
+                                <td className="px-4 py-3 text-sm text-muted-foreground">
+                                  {entry.status}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-muted-foreground">
+                                  {entry.remark}
                                 </td>
                               </tr>
                             ))}
@@ -631,67 +593,42 @@ const ApplicationStatus = () => {
                     )}
                   </Card>
                 )}
+
+                {/* Disclaimer */}
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 px-4 py-3 rounded-lg">
+                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <p>
+                    This tracker retrieves data from the official EMGS portal. For official verification, please visit{" "}
+                    <a 
+                      href="https://visa.educationmalaysia.gov.my/emgs/application/track/index" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      EMGS Portal <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </p>
+                </div>
               </div>
             )}
 
             {/* Not Found State */}
-            {hasSearched && !searchResult?.found && !isLoading && (
-              <Card className="mt-8 border border-border rounded-2xl overflow-hidden">
-                <CardContent className="p-8 md:p-12 text-center">
+            {hasSearched && !isLoading && !searchResult?.found && !error && (
+              <Card className="mt-8 border border-border rounded-lg overflow-hidden">
+                <CardContent className="p-8 text-center">
                   <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                    <XCircle className="w-8 h-8 text-muted-foreground" />
+                    <Search className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">Application Not Found</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                    We couldn&apos;t find an application matching your details. Please verify your travel document number and nationality, then try again.
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Application Found</h3>
+                  <p className="text-muted-foreground text-sm mb-4 max-w-md mx-auto">
+                    We couldn&apos;t find any application matching the provided details. Please check your travel document number and nationality.
                   </p>
-                  <Button variant="outline" onClick={() => setHasSearched(false)} className="rounded-xl">
+                  <Button variant="outline" onClick={() => { setHasSearched(false); setPassportNumber(""); setNationality(""); }}>
                     Try Again
                   </Button>
                 </CardContent>
               </Card>
             )}
-
-            {/* Disclaimer */}
-            <div className="mt-8 bg-muted/50 rounded-2xl p-6 border border-border">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-muted-foreground">
-                  <p className="mb-2">
-                    <strong>Disclaimer:</strong> This application status tracker retrieves data from the official
-                    Education Malaysia Global Services (EMGS) portal. NH Global Education is <strong>not affiliated</strong> with EMGS or the Malaysian government.
-                  </p>
-                  <p>
-                    For official verification, please visit the{" "}
-                    <a
-                      href="https://visa.educationmalaysia.gov.my/emgs/application/searchForm/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      EMGS Official Portal
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Help Section */}
-            <div className="mt-8 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-2xl p-6 md:p-8 border border-primary/10">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-foreground mb-2">Need Help?</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  If you&apos;re having trouble tracking your application or have any questions, our team is here to help.
-                </p>
-                <a
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-medium px-6 py-2.5 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 text-sm"
-                >
-                  Contact Support
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </section>
