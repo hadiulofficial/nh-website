@@ -32,7 +32,7 @@ const Navbar = () => {
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled 
           ? "bg-background/95 backdrop-blur-md border-b border-border shadow-sm" 
-          : "bg-transparent"
+          : "bg-background/95 backdrop-blur-md"
       }`}
     >
       <div className="container mx-auto px-6 lg:px-12">
@@ -52,11 +52,7 @@ const Navbar = () => {
               <a
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  isScrolled 
-                    ? "text-foreground hover:text-primary hover:bg-primary/5" 
-                    : "text-white/90 hover:text-white hover:bg-white/10"
-                }`}
+                className="px-3 py-2 text-sm font-medium rounded-lg transition-colors text-foreground hover:text-primary hover:bg-primary/5"
               >
                 {link.label}
               </a>
@@ -66,14 +62,7 @@ const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden lg:block">
             <Link to="/contact">
-              <Button 
-                size="sm" 
-                className={`${
-                  isScrolled 
-                    ? "" 
-                    : "bg-white text-foreground hover:bg-white/90"
-                }`}
-              >
+              <Button size="sm">
                 Contact Us
               </Button>
             </Link>
@@ -86,9 +75,9 @@ const Navbar = () => {
             aria-label="Toggle menu"
           >
             {isMenuOpen ? (
-              <X className={`h-6 w-6 ${isScrolled ? "text-foreground" : "text-white"}`} />
+              <X className="h-6 w-6 text-foreground" />
             ) : (
-              <Menu className={`h-6 w-6 ${isScrolled ? "text-foreground" : "text-white"}`} />
+              <Menu className="h-6 w-6 text-foreground" />
             )}
           </button>
         </div>
