@@ -1,5 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { StarIcon, QuoteIcon } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
@@ -17,7 +16,7 @@ const testimonials = [
     name: "Arina Karim",
     university: "City University Malaysia",
     country: "Malaysia",
-    program: "Bachelor of  Hospitality Management",
+    program: "Bachelor of Hospitality Management",
     rating: 5,
     text: "I had a wonderful experience with NH Global Education. They made my journey to Malaysia for studies smooth and stress-free. From start to finish, the team was professional, supportive, and completely trustworthy. They guided me at every step and always stayed connected to ensure everything went well. I am truly grateful to be associated with such a dependable, student-focused organization. Thank you, NH Global Education, for your constant support. Truly an ideal choice for anyone aspiring to study abroad!",
     avatar: "AK",
@@ -29,7 +28,7 @@ const testimonials = [
     country: "Malaysia",
     program: "Master of Business Administration",
     rating: 5,
-    text: "NH Global Education is a trustworthy and transparent agency for study visas. Alhamdulillah, I successfully came to Malaysia through their guidance. The CEO personally ensured my visa approval within just 25 days, without any hidden charges. From application to arrival, I received continuous support even after reaching Malaysia with accommodation and other needs. NH Global is a true partner in fulfilling students’ dreams, and I sincerely wish the company lasting success.",
+    text: "NH Global Education is a trustworthy and transparent agency for study visas. Alhamdulillah, I successfully came to Malaysia through their guidance. The CEO personally ensured my visa approval within just 25 days, without any hidden charges. From application to arrival, I received continuous support even after reaching Malaysia with accommodation and other needs. NH Global is a true partner in fulfilling students' dreams, and I sincerely wish the company lasting success.",
     avatar: "MU",
   },
   {
@@ -49,7 +48,7 @@ const testimonials = [
     country: "Malaysia",
     program: "Bachelor of Information Technology",
     rating: 5,
-    text: "As a parent, I am deeply grateful to NH Global Education for their support in my daughter Marufa Akter’s admission to the Bachelor of Information Technology (Hons) at SEGi University. Her case was very critical, with multiple rejections before, but NH Global managed to secure her visa within just one month. Their professionalism and dedication made a huge difference, and I truly appreciate their trustworthy guidance.",
+    text: "As a parent, I am deeply grateful to NH Global Education for their support in my daughter Marufa Akter's admission to the Bachelor of Information Technology (Hons) at SEGi University. Her case was very critical, with multiple rejections before, but NH Global managed to secure her visa within just one month. Their professionalism and dedication made a huge difference, and I truly appreciate their trustworthy guidance.",
     avatar: "MA",
   },
   {
@@ -59,70 +58,78 @@ const testimonials = [
     country: "Malaysia",
     program: "Senior Executive, International Office",
     rating: 5,
-    text: "I’ve been working with NH Global Education for the past two years, and they have been an excellent authorised partner of INTI. They’ve consistently helped recruit a good number of quality students from Bangladesh. One of their greatest strengths is their responsiveness,  they always attend to students’ concerns and inquiries promptly. The quality of their work and their dedication to student success are truly appreciable. It’s been a pleasure collaborating with such a supportive team.",
+    text: "I've been working with NH Global Education for the past two years, and they have been an excellent authorised partner of INTI. They've consistently helped recruit a good number of quality students from Bangladesh. One of their greatest strengths is their responsiveness, they always attend to students' concerns and inquiries promptly. The quality of their work and their dedication to student success are truly appreciable. It's been a pleasure collaborating with such a supportive team.",
     avatar: "WN",
   },
 ];
 
 const Testimonials = () => {
   return (
-    <section id="testimonials" className="py-20 bg-muted/30">
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6">
+    <section id="testimonials" className="py-20 md:py-28 bg-background">
+      <div className="container mx-auto px-6 lg:px-12">
+        {/* Section Header */}
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <p className="text-sm font-medium text-primary uppercase tracking-wider mb-3">
+            Testimonials
+          </p>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 text-balance">
             Success Stories from Our Students
           </h2>
-          <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             Join thousands of successful students who have achieved their study
             abroad dreams with our comprehensive support and guidance.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <Card
+        {/* Testimonials Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {testimonials.map((testimonial) => (
+            <article
               key={testimonial.id}
-              className="group border-0 shadow-elegant hover:shadow-glow transition-all duration-500 hover:-translate-y-1 bg-gradient-card"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="group bg-card rounded-2xl p-6 lg:p-8 border border-border hover:border-primary/20 transition-all duration-300 hover:shadow-lg flex flex-col"
             >
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold mr-4">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground">
-                      {testimonial.name}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.program}
-                    </p>
-                  </div>
+              {/* Header */}
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                  {testimonial.avatar}
                 </div>
-
-                <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon
-                      key={i}
-                      className="h-4 w-4 text-accent fill-current"
-                    />
-                  ))}
-                </div>
-
-                <div className="relative mb-4">
-                  <QuoteIcon className="h-6 w-6 text-primary/30 absolute -top-2 -left-2" />
-                  <p className="text-muted-foreground italic pl-4">
-                    "{testimonial.text}"
+                <div className="min-w-0">
+                  <h4 className="font-semibold text-foreground truncate">
+                    {testimonial.name}
+                  </h4>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {testimonial.program}
                   </p>
                 </div>
+              </div>
 
-                <div className="text-sm text-muted-foreground">
-                  <span className="font-medium">{testimonial.university}</span>
-                  <span className="mx-2">•</span>
+              {/* Rating */}
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-4 w-4 text-accent fill-accent"
+                  />
+                ))}
+              </div>
+
+              {/* Quote */}
+              <div className="relative flex-1 mb-5">
+                <Quote className="absolute -top-1 -left-1 h-6 w-6 text-primary/10" />
+                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-5 pl-4">
+                  {testimonial.text}
+                </p>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-5 border-t border-border">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{testimonial.university}</span>
+                  <span className="mx-2 text-border">|</span>
                   <span>{testimonial.country}</span>
-                </div>
-              </CardContent>
-            </Card>
+                </p>
+              </div>
+            </article>
           ))}
         </div>
       </div>
